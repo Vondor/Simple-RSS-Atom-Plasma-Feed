@@ -11,10 +11,11 @@ PlasmoidItem {
     property string lastUpdatedText: i18n("Never")
     property var allArticlesRaw: [] 
     property string searchQuery: "" 
+    property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
     
     property string currentTitle: {
         try {
-            return root.Plasmoid.configuration.customTitle.trim();
+            return Plasmoid.configuration.customTitle.trim();
         } catch(e) {
             return "";
         }
@@ -31,7 +32,7 @@ PlasmoidItem {
         id: refreshTimer
         interval: {
             try {
-                return root.Plasmoid.configuration.refreshTime * 60 * 1000;
+                return Plasmoid.configuration.refreshTime * 60 * 1000;
             } catch(e) {
                 return 900000; 
             }
@@ -42,7 +43,7 @@ PlasmoidItem {
     }
 
     Connections {
-        target: root.Plasmoid.configuration
+        target: Plasmoid.configuration
         ignoreUnknownSignals: true
         function onSourcesJsonChanged() { fetchFeeds(); }
         function onRefreshTimeChanged() { refreshTimer.restart(); fetchFeeds(); }
@@ -55,7 +56,7 @@ PlasmoidItem {
         
         var day = ("0" + date.getDate()).slice(-2);
         var month = ("0" + (date.getMonth() + 1)).slice(-2);
-        var year = ("0" + date.getFullYear()).slice(-2); // Short year version (yy)
+        var year = ("0" + date.getFullYear()).slice(-2);
         
         var hours = ("0" + date.getHours()).slice(-2);
         var minutes = ("0" + date.getMinutes()).slice(-2);
@@ -185,10 +186,13 @@ PlasmoidItem {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            
             ListView {
                 id: listView
+                width: parent.width // FIXED: Explicit width constraint prevents horizontal layout collapse
                 model: articlesModel
                 spacing: Kirigami.Units.smallSpacing
+                boundsBehavior: Flickable.StopAtBounds
                 
                 delegate: PlasmaComponents.ItemDelegate {
                     id: delegateItem
@@ -226,7 +230,7 @@ PlasmoidItem {
     function fetchFeeds() {
         var jsonStr = "";
         try {
-            jsonStr = root.Plasmoid.configuration.sourcesJson;
+            jsonStr = Plasmoid.configuration.sourcesJson;
         } catch(e) {
             lastUpdatedText = i18n("Config Access Error");
             return;
@@ -254,14 +258,19 @@ PlasmoidItem {
             return;
         }
 
+        // Increment fetch ID for this specific batch request transaction
+        var fetchId = ++root.currentFetchId;
         var completedRequests = 0;
         var fetchedArticles = [];
 
         function checkCompletion() {
+            // Drop execution if a newer update cycle has taken over
+            if (fetchId !== root.currentFetchId) return;
+
             if (completedRequests === sources.length) {
                 var excludePatterns = [];
                 try {
-                    var exJson = root.Plasmoid.configuration.excludeRegexJson;
+                    var exJson = Plasmoid.configuration.excludeRegexJson;
                     if (exJson) {
                         excludePatterns = JSON.parse(exJson);
                     }
@@ -297,7 +306,6 @@ PlasmoidItem {
                 allArticlesRaw = allowedArticles;
                 filterArticles(); 
                 
-                // FIXED: Formats widget header layout update time with hh:mm ShortTZ rule
                 lastUpdatedText = formatMyTime(new Date());
             }
         }
@@ -313,6 +321,7 @@ PlasmoidItem {
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (fetchId !== root.currentFetchId) return; // Drop stale response early
                         if (xhr.status === 200) {
                             parseFeed(xhr.responseText, url, fetchedArticles);
                         }
@@ -342,10 +351,11 @@ PlasmoidItem {
             
             var link = "";
             var linkM = content.match(/<link[^>]*>([\s\S]*?)<\/link>/);
-            if (linkM && linkM[1].trim() !== "") {
+            if (linkM && linkM[1].trim() !== "" && !linkM[1].includes("href=")) {
                 link = stripTags(linkM[1]).trim();
             } else {
-                var hM = content.match(/<link[^+ href=["']([^"']+)["']/);
+                // FIXED: Repaired broken lookahead regex to accurately discover Atom style href URLs
+                var hM = content.match(/<link[^>]+href=["']([^"']+)["']/);
                 if (hM) link = hM[1].trim();
             }
             
@@ -358,7 +368,6 @@ PlasmoidItem {
                     var d = new Date(pubDate);
                     if (!isNaN(d.getTime())) { 
                         ts = d.getTime(); 
-                        // FIXED: Formats article date strings strictly to dd.mm.yy hh:mm ShortTZ
                         fmtDate = formatMyDateTime(d); 
                     }
                 }
