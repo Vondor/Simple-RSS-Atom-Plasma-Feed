@@ -11,10 +11,11 @@ PlasmoidItem {
     property string lastUpdatedText: i18n("Never")
     property var allArticlesRaw: [] 
     property string searchQuery: "" 
+    property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
     
     property string currentTitle: {
         try {
-            return root.Plasmoid.configuration.customTitle.trim();
+            return Plasmoid.configuration.customTitle.trim();
         } catch(e) {
             return "";
         }
@@ -27,11 +28,24 @@ PlasmoidItem {
 
     ListModel { id: articlesModel }
 
+    // Reusable Timer component, instantiated per in-flight feed request as a
+    // safety timeout. QML's XMLHttpRequest does not implement .timeout/.ontimeout
+    // (long-standing Qt limitation), so without this a single unresponsive feed
+    // would prevent completedRequests from ever reaching sources.length, and the
+    // whole widget would stop updating - even for feeds that fetched fine.
+    Component {
+        id: feedTimeoutComponent
+        Timer {
+            interval: 15000 // 15s per-feed safety timeout
+            repeat: false
+        }
+    }
+
     Timer {
         id: refreshTimer
         interval: {
             try {
-                return root.Plasmoid.configuration.refreshTime * 60 * 1000;
+                return Plasmoid.configuration.refreshTime * 60 * 1000;
             } catch(e) {
                 return 900000; 
             }
@@ -41,12 +55,22 @@ PlasmoidItem {
         onTriggered: fetchFeeds()
     }
 
+    // Coalesces multiple config properties changing at once (e.g. editing
+    // sources, blacklist, and refresh time, then clicking "Apply" once) into
+    // a single fetchFeeds() call instead of one redundant fetch per property.
+    Timer {
+        id: refreshDebounceTimer
+        interval: 50
+        repeat: false
+        onTriggered: fetchFeeds()
+    }
+
     Connections {
-        target: root.Plasmoid.configuration
+        target: Plasmoid.configuration
         ignoreUnknownSignals: true
-        function onSourcesJsonChanged() { fetchFeeds(); }
-        function onRefreshTimeChanged() { refreshTimer.restart(); fetchFeeds(); }
-        function onExcludeRegexJsonChanged() { fetchFeeds(); } 
+        function onSourcesJsonChanged() { refreshDebounceTimer.restart(); }
+        function onRefreshTimeChanged() { refreshTimer.restart(); refreshDebounceTimer.restart(); }
+        function onExcludeRegexJsonChanged() { refreshDebounceTimer.restart(); } 
     }
 
     // CUSTOM FORMATTERS FOR TIME, DATE, AND TIMEZONES
@@ -55,7 +79,7 @@ PlasmoidItem {
         
         var day = ("0" + date.getDate()).slice(-2);
         var month = ("0" + (date.getMonth() + 1)).slice(-2);
-        var year = ("0" + date.getFullYear()).slice(-2); // Short year version (yy)
+        var year = ("0" + date.getFullYear()).slice(-2);
         
         var hours = ("0" + date.getHours()).slice(-2);
         var minutes = ("0" + date.getMinutes()).slice(-2);
@@ -162,7 +186,15 @@ PlasmoidItem {
                     anchors.verticalCenter: parent.verticalCenter
                     icon.name: "edit-clear"
                     visible: root.searchQuery !== ""
-                    onClicked: root.searchQuery = "" 
+                    onClicked: {
+                        // Clearing root.searchQuery alone isn't enough: once the user has
+                        // typed anything, the one-way "text: root.searchQuery" binding above
+                        // is broken (QML drops a binding on any direct write to the property,
+                        // including the field's own internal write on keystrokes), so the
+                        // field's text must be cleared explicitly too.
+                        searchInput.text = "";
+                        root.searchQuery = "";
+                    }
                 }
             }
 
@@ -185,10 +217,13 @@ PlasmoidItem {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            
             ListView {
                 id: listView
+                width: parent.width // FIXED: Explicit width constraint prevents horizontal layout collapse
                 model: articlesModel
                 spacing: Kirigami.Units.smallSpacing
+                boundsBehavior: Flickable.StopAtBounds
                 
                 delegate: PlasmaComponents.ItemDelegate {
                     id: delegateItem
@@ -219,6 +254,17 @@ PlasmoidItem {
                         }
                     }
                 }
+
+                PlasmaComponents.Label {
+                    anchors.centerIn: parent
+                    width: parent.width * 0.8
+                    text: root.searchQuery !== "" ? i18n("No articles match your filter.") : i18n("No articles to show. Check your feed sources or your connection.")
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    opacity: 0.5
+                    font.italic: true
+                    visible: articlesModel.count === 0
+                }
             }
         }
     }
@@ -226,7 +272,7 @@ PlasmoidItem {
     function fetchFeeds() {
         var jsonStr = "";
         try {
-            jsonStr = root.Plasmoid.configuration.sourcesJson;
+            jsonStr = Plasmoid.configuration.sourcesJson;
         } catch(e) {
             lastUpdatedText = i18n("Config Access Error");
             return;
@@ -254,14 +300,19 @@ PlasmoidItem {
             return;
         }
 
+        // Increment fetch ID for this specific batch request transaction
+        var fetchId = ++root.currentFetchId;
         var completedRequests = 0;
         var fetchedArticles = [];
 
         function checkCompletion() {
+            // Drop execution if a newer update cycle has taken over
+            if (fetchId !== root.currentFetchId) return;
+
             if (completedRequests === sources.length) {
                 var excludePatterns = [];
                 try {
-                    var exJson = root.Plasmoid.configuration.excludeRegexJson;
+                    var exJson = Plasmoid.configuration.excludeRegexJson;
                     if (exJson) {
                         excludePatterns = JSON.parse(exJson);
                     }
@@ -293,11 +344,24 @@ PlasmoidItem {
                     }
                 }
 
-                allowedArticles.sort(function(a, b) { return b.timestamp - a.timestamp; });
-                allArticlesRaw = allowedArticles;
+                // De-duplicate: same article can appear if a feed URL is listed twice,
+                // or if two different sources syndicate the same item. Key on the link
+                // when present, otherwise fall back to source+title.
+                var seenKeys = {};
+                var dedupedArticles = [];
+                for (var d = 0; d < allowedArticles.length; d++) {
+                    var dedupArticle = allowedArticles[d];
+                    var dedupKey = dedupArticle.link ? dedupArticle.link : (dedupArticle.source + "|" + dedupArticle.title);
+                    if (!seenKeys[dedupKey]) {
+                        seenKeys[dedupKey] = true;
+                        dedupedArticles.push(dedupArticle);
+                    }
+                }
+
+                dedupedArticles.sort(function(a, b) { return b.timestamp - a.timestamp; });
+                allArticlesRaw = dedupedArticles;
                 filterArticles(); 
                 
-                // FIXED: Formats widget header layout update time with hh:mm ShortTZ rule
                 lastUpdatedText = formatMyTime(new Date());
             }
         }
@@ -309,22 +373,46 @@ PlasmoidItem {
                 return;
             }
 
+            var finished = false;
+            var timeoutTimer = null;
+            var xhr = null;
+
+            function finishOnce() {
+                if (finished) return;
+                finished = true;
+                if (timeoutTimer) {
+                    timeoutTimer.stop();
+                    timeoutTimer.destroy();
+                    timeoutTimer = null;
+                }
+                completedRequests++;
+                checkCompletion();
+            }
+
             try {
-                var xhr = new XMLHttpRequest();
+                xhr = new XMLHttpRequest();
+                timeoutTimer = feedTimeoutComponent.createObject(root);
+                timeoutTimer.triggered.connect(function() {
+                    if (fetchId === root.currentFetchId) {
+                        try { xhr.abort(); } catch(e) {}
+                    }
+                    finishOnce();
+                });
+
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (fetchId !== root.currentFetchId) { finishOnce(); return; } // Drop stale response early
                         if (xhr.status === 200) {
                             parseFeed(xhr.responseText, url, fetchedArticles);
                         }
-                        completedRequests++;
-                        checkCompletion();
+                        finishOnce();
                     }
                 };
                 xhr.open("GET", url, true);
                 xhr.send();
+                timeoutTimer.start();
             } catch (e) {
-                completedRequests++;
-                checkCompletion();
+                finishOnce();
             }
         });
     }
@@ -341,12 +429,23 @@ PlasmoidItem {
             var titleM = content.match(/<title[^>]*>([\s\S]*?)<\/title>/);
             
             var link = "";
-            var linkM = content.match(/<link[^>]*>([\s\S]*?)<\/link>/);
-            if (linkM && linkM[1].trim() !== "") {
-                link = stripTags(linkM[1]).trim();
+            // Atom entries can list multiple self-closing <link> tags (rel="alternate",
+            // "self", "edit", etc). Prefer rel="alternate" - the actual article URL -
+            // regardless of whether "rel" or "href" comes first in the tag.
+            var altM = content.match(/<link\b[^>]*\brel=["']alternate["'][^>]*\bhref=["']([^"']+)["']/) ||
+                       content.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']alternate["']/);
+            if (altM) {
+                link = altM[1].trim();
             } else {
-                var hM = content.match(/<link[^+ href=["']([^"']+)["']/);
-                if (hM) link = hM[1].trim();
+                var linkM = content.match(/<link[^>]*>([\s\S]*?)<\/link>/);
+                if (linkM && linkM[1].trim() !== "" && !linkM[1].includes("href=")) {
+                    // RSS-style: <link>http://example.com</link>
+                    link = stripTags(linkM[1]).trim();
+                } else {
+                    // Atom fallback: no rel="alternate" found, take the first href present
+                    var hM = content.match(/<link[^>]+href=["']([^"']+)["']/);
+                    if (hM) link = hM[1].trim();
+                }
             }
             
             var dM = content.match(/<(pubDate|updated|published)[^>]*>([\s\S]*?)<\/\1>/);
@@ -358,7 +457,6 @@ PlasmoidItem {
                     var d = new Date(pubDate);
                     if (!isNaN(d.getTime())) { 
                         ts = d.getTime(); 
-                        // FIXED: Formats article date strings strictly to dd.mm.yy hh:mm ShortTZ
                         fmtDate = formatMyDateTime(d); 
                     }
                 }
@@ -374,10 +472,30 @@ PlasmoidItem {
         }
     }
 
+    function decodeEntities(text) {
+        if (!text) return text;
+        var named = {
+            "amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'",
+            "nbsp": " ", "mdash": "\u2014", "ndash": "\u2013", "hellip": "\u2026",
+            "rsquo": "\u2019", "lsquo": "\u2018", "rdquo": "\u201D", "ldquo": "\u201C"
+        };
+        var result = text.replace(/&(amp|lt|gt|quot|apos|nbsp|mdash|ndash|hellip|rsquo|lsquo|rdquo|ldquo);/g, function(m, name) {
+            return named[name] !== undefined ? named[name] : m;
+        });
+        result = result.replace(/&#(\d+);/g, function(m, dec) {
+            return String.fromCharCode(parseInt(dec, 10));
+        });
+        result = result.replace(/&#x([0-9a-fA-F]+);/g, function(m, hex) {
+            return String.fromCharCode(parseInt(hex, 16));
+        });
+        return result;
+    }
+
     function stripTags(html) {
         if (!html) return "";
         var clean = html.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
-        return clean.replace(/<\/?[^>]+(>|$)/g, "").trim();
+        clean = clean.replace(/<\/?[^>]+(>|$)/g, "");
+        return decodeEntities(clean).trim();
     }
     
     Component.onCompleted: fetchFeeds()

@@ -52,7 +52,6 @@ Kirigami.FormLayout {
         cfg_excludeRegexJson = JSON.stringify(rules);
     }
 
-    // --- Section: Presentation ---
     QQC2.TextField {
         id: titleField
         Kirigami.FormData.label: i18n("Plasmoid Title:")
@@ -67,12 +66,10 @@ Kirigami.FormLayout {
         to: 1440
     }
 
-    // Visual divider spacer separating base setup from active arrays
     Item {
         Kirigami.FormData.isSection: true
     }
 
-    // --- Section: Feed Sources ---
     ColumnLayout {
         Kirigami.FormData.label: i18n("RSS Feed Sources:")
         Layout.fillWidth: true
@@ -98,6 +95,7 @@ Kirigami.FormLayout {
                     boundsBehavior: Flickable.StopAtBounds
                     
                     delegate: QQC2.ItemDelegate {
+                        id: feedDelegate
                         width: feedsListView.width
                         hoverEnabled: true
                         
@@ -113,8 +111,8 @@ Kirigami.FormLayout {
                             QQC2.ToolButton {
                                 icon.name: "edit-delete"
                                 display: QQC2.AbstractButton.IconOnly
-                                QQC2.ToolTip.visible: hovered // FIXED: Added proper QQC2 namespace
-                                QQC2.ToolTip.text: i18n("Remove Source") // FIXED: Added proper QQC2 namespace
+                                QQC2.ToolTip.visible: parent.parent.hovered
+                                QQC2.ToolTip.text: i18n("Remove Source")
                                 Layout.preferredWidth: Kirigami.Units.gridUnit * 1.5
                                 Layout.preferredHeight: Kirigami.Units.gridUnit * 1.5
                                 onClicked: {
@@ -165,7 +163,6 @@ Kirigami.FormLayout {
         Kirigami.FormData.isSection: true
     }
 
-    // --- Section: Content Exclusion Filters ---
     ColumnLayout {
         Kirigami.FormData.label: i18n("Blacklist (Regex):")
         Layout.fillWidth: true
@@ -191,6 +188,7 @@ Kirigami.FormLayout {
                     boundsBehavior: Flickable.StopAtBounds
                     
                     delegate: QQC2.ItemDelegate {
+                        id: regexDelegate
                         width: regexListView.width
                         hoverEnabled: true
                         
@@ -206,8 +204,8 @@ Kirigami.FormLayout {
                             QQC2.ToolButton {
                                 icon.name: "edit-delete"
                                 display: QQC2.AbstractButton.IconOnly
-                                QQC2.ToolTip.visible: hovered // FIXED: Added proper QQC2 namespace
-                                QQC2.ToolTip.text: i18n("Remove Pattern") // FIXED: Added proper QQC2 namespace
+                                QQC2.ToolTip.visible: parent.parent.hovered
+                                QQC2.ToolTip.text: i18n("Remove Pattern")
                                 Layout.preferredWidth: Kirigami.Units.gridUnit * 1.5
                                 Layout.preferredHeight: Kirigami.Units.gridUnit * 1.5
                                 onClicked: {

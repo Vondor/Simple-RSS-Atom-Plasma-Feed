@@ -12,7 +12,7 @@
         "Id": "org.kde.plasma.rssreader",
         "License": "GPL-2.0+",
         "Name": "RSS Feed Plasmoid",
-        "Version": "1.0"
+        "Version": "1.2"
     },
     "KPackageStructure": "Plasma/Applet",
     "X-Plasma-API-Minimum-Version": "6.0"
