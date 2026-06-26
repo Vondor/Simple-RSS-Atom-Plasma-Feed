@@ -14,14 +14,17 @@ Kirigami.FormLayout {
     ListModel { id: feedsModel }
     ListModel { id: regexModel }
 
+    // Populate feeds list when cfg_sourcesJson is set on dialog open.
+    // Accepts plain JSON array only — the SQLite layer in main.qml owns the
+    // canonical data; Plasmoid.configuration is just a staging area for the dialog.
     onCfg_sourcesJsonChanged: {
         if (feedsModel.count === 0 && cfg_sourcesJson) {
             try {
-                var urls = JSON.parse(cfg_sourcesJson);
-                for (var i = 0; i < urls.length; i++) {
+                var parsed = JSON.parse(cfg_sourcesJson);
+                var urls = Array.isArray(parsed) ? parsed : [];
+                for (var i = 0; i < urls.length; i++)
                     feedsModel.append({ "url": urls[i] });
-                }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("RSS configGeneral sourcesJson parse:", e); }
         }
     }
 
@@ -29,26 +32,29 @@ Kirigami.FormLayout {
         if (regexModel.count === 0 && cfg_excludeRegexJson) {
             try {
                 var rules = JSON.parse(cfg_excludeRegexJson);
-                for (var i = 0; i < rules.length; i++) {
-                    regexModel.append({ "pattern": rules[i] });
+                if (Array.isArray(rules)) {
+                    for (var i = 0; i < rules.length; i++)
+                        regexModel.append({ "pattern": rules[i] });
                 }
             } catch(e) { console.error(e); }
         }
     }
 
+    // Write plain JSON arrays. main.qml's Connections handler picks these up,
+    // saves them to SQLite under this instance's Plasmoid.id, and refreshes feeds.
+    // NOTE: Plasmoid is intentionally NOT referenced here — it is not available
+    //       in config pages in Plasma 6.
     function updateFeedsConfig() {
         var urls = [];
-        for (var i = 0; i < feedsModel.count; i++) {
+        for (var i = 0; i < feedsModel.count; i++)
             urls.push(feedsModel.get(i).url);
-        }
         cfg_sourcesJson = JSON.stringify(urls);
     }
 
     function updateRegexConfig() {
         var rules = [];
-        for (var i = 0; i < regexModel.count; i++) {
+        for (var i = 0; i < regexModel.count; i++)
             rules.push(regexModel.get(i).pattern);
-        }
         cfg_excludeRegexJson = JSON.stringify(rules);
     }
 
@@ -66,9 +72,7 @@ Kirigami.FormLayout {
         to: 1440
     }
 
-    Item {
-        Kirigami.FormData.isSection: true
-    }
+    Item { Kirigami.FormData.isSection: true }
 
     ColumnLayout {
         Kirigami.FormData.label: i18n("RSS Feed Sources:")
@@ -93,15 +97,15 @@ Kirigami.FormLayout {
                     id: feedsListView
                     model: feedsModel
                     boundsBehavior: Flickable.StopAtBounds
-                    
+
                     delegate: QQC2.ItemDelegate {
                         id: feedDelegate
                         width: feedsListView.width
                         hoverEnabled: true
-                        
+
                         contentItem: RowLayout {
                             spacing: Kirigami.Units.mediumSpacing
-                            
+
                             QQC2.Label {
                                 text: model.url
                                 Layout.fillWidth: true
@@ -122,7 +126,7 @@ Kirigami.FormLayout {
                             }
                         }
                     }
-                    
+
                     QQC2.Label {
                         anchors.centerIn: parent
                         text: i18n("No feeds configured yet.")
@@ -159,9 +163,7 @@ Kirigami.FormLayout {
         }
     }
 
-    Item {
-        Kirigami.FormData.isSection: true
-    }
+    Item { Kirigami.FormData.isSection: true }
 
     ColumnLayout {
         Kirigami.FormData.label: i18n("Blacklist (Regex):")
@@ -186,15 +188,15 @@ Kirigami.FormLayout {
                     id: regexListView
                     model: regexModel
                     boundsBehavior: Flickable.StopAtBounds
-                    
+
                     delegate: QQC2.ItemDelegate {
                         id: regexDelegate
                         width: regexListView.width
                         hoverEnabled: true
-                        
+
                         contentItem: RowLayout {
                             spacing: Kirigami.Units.mediumSpacing
-                            
+
                             QQC2.Label {
                                 text: model.pattern
                                 Layout.fillWidth: true

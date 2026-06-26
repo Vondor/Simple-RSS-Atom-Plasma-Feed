@@ -2,7 +2,7 @@
     "KPlugin": {
         "Authors": [
             {
-                "Email": "vondor666@proton.me",
+                "Email": "dev@serpentsoftware.de",
                 "Name": "Fabian Drywa"
             }
         ],
@@ -10,9 +10,9 @@
         "Description": "A lightweight RSS Feed reader made via Gemini AI.",
         "Icon": "internet-feed",
         "Id": "org.kde.plasma.rssreader",
-        "License": "GPL-2.0+",
+        "License": "GPL-3.0+",
         "Name": "RSS Feed Plasmoid",
-        "Version": "1.2"
+        "Version": "1.3"
     },
     "KPackageStructure": "Plasma/Applet",
     "X-Plasma-API-Minimum-Version": "6.0"

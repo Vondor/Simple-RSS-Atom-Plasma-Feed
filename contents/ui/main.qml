@@ -4,6 +4,7 @@ import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
+import QtQuick.LocalStorage
 
 PlasmoidItem {
     id: root
@@ -68,9 +69,42 @@ PlasmoidItem {
     Connections {
         target: Plasmoid.configuration
         ignoreUnknownSignals: true
-        function onSourcesJsonChanged() { refreshDebounceTimer.restart(); }
-        function onRefreshTimeChanged() { refreshTimer.restart(); refreshDebounceTimer.restart(); }
-        function onExcludeRegexJsonChanged() { refreshDebounceTimer.restart(); } 
+        function onSourcesJsonChanged() {
+            var db = root.openDB();
+            if (db) root.dbSave(db, Plasmoid.id,
+                                Plasmoid.configuration.sourcesJson,
+                                Plasmoid.configuration.excludeRegexJson,
+                                Plasmoid.configuration.customTitle,
+                                Plasmoid.configuration.refreshTime);
+            refreshDebounceTimer.restart();
+        }
+        function onExcludeRegexJsonChanged() {
+            var db = root.openDB();
+            if (db) root.dbSave(db, Plasmoid.id,
+                                Plasmoid.configuration.sourcesJson,
+                                Plasmoid.configuration.excludeRegexJson,
+                                Plasmoid.configuration.customTitle,
+                                Plasmoid.configuration.refreshTime);
+            refreshDebounceTimer.restart();
+        }
+        function onCustomTitleChanged() {
+            var db = root.openDB();
+            if (db) root.dbSave(db, Plasmoid.id,
+                                Plasmoid.configuration.sourcesJson,
+                                Plasmoid.configuration.excludeRegexJson,
+                                Plasmoid.configuration.customTitle,
+                                Plasmoid.configuration.refreshTime);
+        }
+        function onRefreshTimeChanged() {
+            var db = root.openDB();
+            if (db) root.dbSave(db, Plasmoid.id,
+                                Plasmoid.configuration.sourcesJson,
+                                Plasmoid.configuration.excludeRegexJson,
+                                Plasmoid.configuration.customTitle,
+                                Plasmoid.configuration.refreshTime);
+            refreshTimer.restart();
+            refreshDebounceTimer.restart();
+        }
     }
 
     // CUSTOM FORMATTERS FOR TIME, DATE, AND TIMEZONES
@@ -269,6 +303,86 @@ PlasmoidItem {
         }
     }
 
+    // ── DB FUNCTIONS ─────────────────────────────────────────────────────────
+    // SQLite storage completely bypasses Plasmoid.configuration for sources,
+    // so KDE's appletsrc corruption can never affect what feeds are shown.
+    // Each plasmoid instance has its own row keyed by Plasmoid.id.
+
+    function openDB() {
+        try {
+            return LocalStorage.openDatabaseSync(
+                "SimpleRSSFeed", "1.0",
+                "SimpleRSSFeed per-instance source config", 1024 * 1024);
+        } catch(e) {
+            console.error("SimpleRSSFeed openDB failed:", e);
+            return null;
+        }
+    }
+
+    function initDB(db) {
+        try {
+            db.transaction(function(tx) {
+                tx.executeSql(
+                    "CREATE TABLE IF NOT EXISTS instance_config (" +
+                    "  plasmoid_id INTEGER PRIMARY KEY," +
+                    "  sources_json TEXT NOT NULL DEFAULT '[]'," +
+                    "  exclude_regex_json TEXT NOT NULL DEFAULT '[]'," +
+                    "  custom_title TEXT NOT NULL DEFAULT ''," +
+                    "  refresh_time INTEGER NOT NULL DEFAULT 15" +
+                    ")"
+                );
+            });
+        } catch(e) { console.error("SimpleRSSFeed initDB failed:", e); }
+        // Migrate existing tables created before custom_title / refresh_time were added.
+        [
+            "ALTER TABLE instance_config ADD COLUMN custom_title TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE instance_config ADD COLUMN refresh_time INTEGER NOT NULL DEFAULT 15"
+        ].forEach(function(sql) {
+            try { db.transaction(function(tx) { tx.executeSql(sql); }); } catch(e) {}
+        });
+    }
+
+    // Returns { sourcesJson, excludeRegexJson } or null if no row exists yet.
+    function dbLoad(db, plasmoidId) {
+        var result = null;
+        try {
+            db.readTransaction(function(tx) {
+                var rs = tx.executeSql(
+                    "SELECT sources_json, exclude_regex_json, custom_title, refresh_time " +
+                    "FROM instance_config WHERE plasmoid_id = ?",
+                    [plasmoidId]);
+                if (rs.rows.length > 0) {
+                    var row = rs.rows.item(0);
+                    result = {
+                        sourcesJson:      row.sources_json,
+                        excludeRegexJson: row.exclude_regex_json,
+                        customTitle:      row.custom_title,
+                        refreshTime:      row.refresh_time
+                    };
+                }
+            });
+        } catch(e) { console.error("SimpleRSSFeed dbLoad failed:", e); }
+        return result;
+    }
+
+    function dbSave(db, plasmoidId, sourcesJson, excludeRegexJson, customTitle, refreshTime) {
+        try {
+            db.transaction(function(tx) {
+                tx.executeSql(
+                    "INSERT OR REPLACE INTO instance_config " +
+                    "(plasmoid_id, sources_json, exclude_regex_json, custom_title, refresh_time) " +
+                    "VALUES (?, ?, ?, ?, ?)",
+                    [plasmoidId,
+                     sourcesJson      || "[]",
+                     excludeRegexJson || "[]",
+                     customTitle      !== undefined ? customTitle : "",
+                     refreshTime      !== undefined ? refreshTime : 15]);
+            });
+        } catch(e) { console.error("SimpleRSSFeed dbSave failed:", e); }
+    }
+
+    // ── END DB FUNCTIONS ─────────────────────────────────────────────────────
+
     function fetchFeeds() {
         var jsonStr = "";
         try {
@@ -278,20 +392,31 @@ PlasmoidItem {
             return;
         }
 
-        if (!jsonStr || jsonStr.trim() === "") { 
+        if (!jsonStr || jsonStr.trim() === "") {
             lastUpdatedText = i18n("No sources configured");
             articlesModel.clear();
             allArticlesRaw = [];
-            return; 
+            return;
         }
 
-        var sources = [];
+        // Plasmoid.configuration was pre-populated from SQLite on startup, so this
+        // is normally a plain JSON array. Legacy branches handle old-format installs.
+        var sources    = [];
+        var myExcludes = [];
         try {
-            sources = JSON.parse(jsonStr);
+            var parsed = JSON.parse(jsonStr);
+            if (Array.isArray(parsed)) {
+                sources = parsed;
+            } else if (parsed && typeof parsed === "object") {
+                if      (parsed.v === 1) sources = parsed.sources || [];
+                else if (parsed.v === 2) sources = ((parsed.instances || {})[String(Plasmoid.id)] || {}).sources || [];
+            }
         } catch(e) {
             lastUpdatedText = i18n("JSON Parse Error");
             return;
         }
+
+        try { myExcludes = JSON.parse(Plasmoid.configuration.excludeRegexJson || "[]"); } catch(e) {}
 
         if (!Array.isArray(sources) || sources.length === 0) {
             lastUpdatedText = i18n("No sources configured");
@@ -310,15 +435,8 @@ PlasmoidItem {
             if (fetchId !== root.currentFetchId) return;
 
             if (completedRequests === sources.length) {
-                var excludePatterns = [];
-                try {
-                    var exJson = Plasmoid.configuration.excludeRegexJson;
-                    if (exJson) {
-                        excludePatterns = JSON.parse(exJson);
-                    }
-                } catch(e) {
-                    console.error("Failed parsing exclude rules json:", e);
-                }
+                // Excludes were already extracted from the v2 config above.
+                var excludePatterns = Array.isArray(myExcludes) ? myExcludes : [];
 
                 var compiledExcludes = [];
                 for (var k = 0; k < excludePatterns.length; k++) {
@@ -498,5 +616,24 @@ PlasmoidItem {
         return decodeEntities(clean).trim();
     }
     
-    Component.onCompleted: fetchFeeds()
+    Component.onCompleted: {
+        var db = openDB();
+        if (db) {
+            initDB(db);
+            var saved = dbLoad(db, Plasmoid.id);
+            if (saved) {
+                Plasmoid.configuration.sourcesJson      = saved.sourcesJson;
+                Plasmoid.configuration.excludeRegexJson = saved.excludeRegexJson;
+                Plasmoid.configuration.customTitle      = saved.customTitle;
+                Plasmoid.configuration.refreshTime      = saved.refreshTime;
+            } else {
+                dbSave(db, Plasmoid.id,
+                       Plasmoid.configuration.sourcesJson,
+                       Plasmoid.configuration.excludeRegexJson,
+                       Plasmoid.configuration.customTitle,
+                       Plasmoid.configuration.refreshTime);
+            }
+        }
+        fetchFeeds();
+    }
 }
