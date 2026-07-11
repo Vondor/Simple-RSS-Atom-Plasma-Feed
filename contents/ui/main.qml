@@ -4,7 +4,7 @@ import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
-import QtQuick.LocalStorage
+import QtCore
 
 PlasmoidItem {
     id: root
@@ -13,6 +13,7 @@ PlasmoidItem {
     property var allArticlesRaw: [] 
     property string searchQuery: "" 
     property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
+    property bool initializing: false  // blocks Connections writes during startup restore
     
     property string currentTitle: {
         try {
@@ -66,44 +67,47 @@ PlasmoidItem {
         onTriggered: fetchFeeds()
     }
 
+    // Per-instance settings in a plain INI file under ~/.config/.
+    // category is keyed by Plasmoid.id so every instance is fully isolated.
+    // Qt.labs.settings persists every property automatically — no manual I/O needed.
+    Settings {
+        id: instanceSettings
+        category: "SimpleRSSFeed_" + Plasmoid.id
+
+        property string sourcesJson:      "[]"
+        property string excludeRegexJson: "[]"
+        property string customTitle:      ""
+        property int    refreshTime:      15
+        // Becomes true after the first successful seed so Component.onCompleted
+        // knows to RESTORE from here rather than seed from Plasmoid.configuration.
+        property bool   seeded:           false
+    }
+
     Connections {
         target: Plasmoid.configuration
         ignoreUnknownSignals: true
         function onSourcesJsonChanged() {
-            var db = root.openDB();
-            if (db) root.dbSave(db, Plasmoid.id,
-                                Plasmoid.configuration.sourcesJson,
-                                Plasmoid.configuration.excludeRegexJson,
-                                Plasmoid.configuration.customTitle,
-                                Plasmoid.configuration.refreshTime);
-            refreshDebounceTimer.restart();
+            if (!root.initializing) {
+                instanceSettings.sourcesJson = Plasmoid.configuration.sourcesJson;
+                refreshDebounceTimer.restart();
+            }
         }
         function onExcludeRegexJsonChanged() {
-            var db = root.openDB();
-            if (db) root.dbSave(db, Plasmoid.id,
-                                Plasmoid.configuration.sourcesJson,
-                                Plasmoid.configuration.excludeRegexJson,
-                                Plasmoid.configuration.customTitle,
-                                Plasmoid.configuration.refreshTime);
-            refreshDebounceTimer.restart();
+            if (!root.initializing) {
+                instanceSettings.excludeRegexJson = Plasmoid.configuration.excludeRegexJson;
+                refreshDebounceTimer.restart();
+            }
         }
         function onCustomTitleChanged() {
-            var db = root.openDB();
-            if (db) root.dbSave(db, Plasmoid.id,
-                                Plasmoid.configuration.sourcesJson,
-                                Plasmoid.configuration.excludeRegexJson,
-                                Plasmoid.configuration.customTitle,
-                                Plasmoid.configuration.refreshTime);
+            if (!root.initializing)
+                instanceSettings.customTitle = Plasmoid.configuration.customTitle;
         }
         function onRefreshTimeChanged() {
-            var db = root.openDB();
-            if (db) root.dbSave(db, Plasmoid.id,
-                                Plasmoid.configuration.sourcesJson,
-                                Plasmoid.configuration.excludeRegexJson,
-                                Plasmoid.configuration.customTitle,
-                                Plasmoid.configuration.refreshTime);
+            if (!root.initializing) {
+                instanceSettings.refreshTime = Plasmoid.configuration.refreshTime;
+                refreshDebounceTimer.restart();
+            }
             refreshTimer.restart();
-            refreshDebounceTimer.restart();
         }
     }
 
@@ -303,85 +307,6 @@ PlasmoidItem {
         }
     }
 
-    // ── DB FUNCTIONS ─────────────────────────────────────────────────────────
-    // SQLite storage completely bypasses Plasmoid.configuration for sources,
-    // so KDE's appletsrc corruption can never affect what feeds are shown.
-    // Each plasmoid instance has its own row keyed by Plasmoid.id.
-
-    function openDB() {
-        try {
-            return LocalStorage.openDatabaseSync(
-                "SimpleRSSFeed", "1.0",
-                "SimpleRSSFeed per-instance source config", 1024 * 1024);
-        } catch(e) {
-            console.error("SimpleRSSFeed openDB failed:", e);
-            return null;
-        }
-    }
-
-    function initDB(db) {
-        try {
-            db.transaction(function(tx) {
-                tx.executeSql(
-                    "CREATE TABLE IF NOT EXISTS instance_config (" +
-                    "  plasmoid_id INTEGER PRIMARY KEY," +
-                    "  sources_json TEXT NOT NULL DEFAULT '[]'," +
-                    "  exclude_regex_json TEXT NOT NULL DEFAULT '[]'," +
-                    "  custom_title TEXT NOT NULL DEFAULT ''," +
-                    "  refresh_time INTEGER NOT NULL DEFAULT 15" +
-                    ")"
-                );
-            });
-        } catch(e) { console.error("SimpleRSSFeed initDB failed:", e); }
-        // Migrate existing tables created before custom_title / refresh_time were added.
-        [
-            "ALTER TABLE instance_config ADD COLUMN custom_title TEXT NOT NULL DEFAULT ''",
-            "ALTER TABLE instance_config ADD COLUMN refresh_time INTEGER NOT NULL DEFAULT 15"
-        ].forEach(function(sql) {
-            try { db.transaction(function(tx) { tx.executeSql(sql); }); } catch(e) {}
-        });
-    }
-
-    // Returns { sourcesJson, excludeRegexJson } or null if no row exists yet.
-    function dbLoad(db, plasmoidId) {
-        var result = null;
-        try {
-            db.readTransaction(function(tx) {
-                var rs = tx.executeSql(
-                    "SELECT sources_json, exclude_regex_json, custom_title, refresh_time " +
-                    "FROM instance_config WHERE plasmoid_id = ?",
-                    [plasmoidId]);
-                if (rs.rows.length > 0) {
-                    var row = rs.rows.item(0);
-                    result = {
-                        sourcesJson:      row.sources_json,
-                        excludeRegexJson: row.exclude_regex_json,
-                        customTitle:      row.custom_title,
-                        refreshTime:      row.refresh_time
-                    };
-                }
-            });
-        } catch(e) { console.error("SimpleRSSFeed dbLoad failed:", e); }
-        return result;
-    }
-
-    function dbSave(db, plasmoidId, sourcesJson, excludeRegexJson, customTitle, refreshTime) {
-        try {
-            db.transaction(function(tx) {
-                tx.executeSql(
-                    "INSERT OR REPLACE INTO instance_config " +
-                    "(plasmoid_id, sources_json, exclude_regex_json, custom_title, refresh_time) " +
-                    "VALUES (?, ?, ?, ?, ?)",
-                    [plasmoidId,
-                     sourcesJson      || "[]",
-                     excludeRegexJson || "[]",
-                     customTitle      !== undefined ? customTitle : "",
-                     refreshTime      !== undefined ? refreshTime : 15]);
-            });
-        } catch(e) { console.error("SimpleRSSFeed dbSave failed:", e); }
-    }
-
-    // ── END DB FUNCTIONS ─────────────────────────────────────────────────────
 
     function fetchFeeds() {
         var jsonStr = "";
@@ -617,23 +542,23 @@ PlasmoidItem {
     }
     
     Component.onCompleted: {
-        var db = openDB();
-        if (db) {
-            initDB(db);
-            var saved = dbLoad(db, Plasmoid.id);
-            if (saved) {
-                Plasmoid.configuration.sourcesJson      = saved.sourcesJson;
-                Plasmoid.configuration.excludeRegexJson = saved.excludeRegexJson;
-                Plasmoid.configuration.customTitle      = saved.customTitle;
-                Plasmoid.configuration.refreshTime      = saved.refreshTime;
-            } else {
-                dbSave(db, Plasmoid.id,
-                       Plasmoid.configuration.sourcesJson,
-                       Plasmoid.configuration.excludeRegexJson,
-                       Plasmoid.configuration.customTitle,
-                       Plasmoid.configuration.refreshTime);
-            }
+        root.initializing = true;
+        if (instanceSettings.seeded) {
+            // Normal startup: restore our values, overwriting whatever KDE left in appletsrc.
+            Plasmoid.configuration.sourcesJson      = instanceSettings.sourcesJson;
+            Plasmoid.configuration.excludeRegexJson = instanceSettings.excludeRegexJson;
+            Plasmoid.configuration.customTitle      = instanceSettings.customTitle;
+            Plasmoid.configuration.refreshTime      = instanceSettings.refreshTime;
+        } else {
+            // First run of this version: seed Settings from Plasmoid.configuration so that
+            // any sources already configured (in older versions) are preserved.
+            instanceSettings.sourcesJson      = Plasmoid.configuration.sourcesJson;
+            instanceSettings.excludeRegexJson = Plasmoid.configuration.excludeRegexJson;
+            instanceSettings.customTitle      = Plasmoid.configuration.customTitle;
+            instanceSettings.refreshTime      = Plasmoid.configuration.refreshTime;
+            instanceSettings.seeded           = true;
         }
+        root.initializing = false;
         fetchFeeds();
     }
 }
