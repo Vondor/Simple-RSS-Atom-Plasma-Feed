@@ -25,8 +25,10 @@ PlasmoidItem {
 
     onSearchQueryChanged: filterArticles()
 
-    switchWidth: Kirigami.Units.gridUnit * 15
-    switchHeight: Kirigami.Units.gridUnit * 20
+    // Show the compact (logo) representation when the widget is smaller than
+    // 250x250; the full content view is used at or above that size.
+    switchWidth: 250
+    switchHeight: 250
 
     ListModel { id: articlesModel }
 
@@ -188,9 +190,32 @@ PlasmoidItem {
         }
     }
 
+    // Shown when the widget is smaller than switchWidth/switchHeight (250x250).
+    // Draws the same logo as the widget-gallery preview (contents/screenshot.png)
+    // instead of the metadata "Icon", which renders blank here. The MouseArea is
+    // required for a custom compact view: it toggles the full popup on click.
+    compactRepresentation: MouseArea {
+        onClicked: root.expanded = !root.expanded
+
+        Image {
+            anchors.fill: parent
+            anchors.margins: Kirigami.Units.smallSpacing
+            source: Qt.resolvedUrl("../screenshot.png")
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+        }
+    }
+
     fullRepresentation: ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
+        // Preferred size for a newly-placed widget: 400x400. Plasma saves each
+        // instance's size after the user resizes it, so this only seeds the
+        // very first placement of a fresh instance; existing widgets keep the
+        // size stored in their configuration.
+        Layout.preferredWidth: 400
+        Layout.preferredHeight: 400
 
         ColumnLayout {
             Layout.fillWidth: true
