@@ -1,0 +1,122 @@
+# German translation of rssreader
+# Copyright (C) 2026
+# This file is distributed under the same license as the rssreader package.
+# Fabian Drywa <dev@serpentsoftware.de>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: rssreader\n"
+"Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
+"POT-Creation-Date: 2026-08-20 19:11+0000\n"
+"PO-Revision-Date: 2026-07-23 13:15+0000\n"
+"Last-Translator: Fabian Drywa <dev@serpentsoftware.de>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: contents/config/config.qml
+msgid "General"
+msgstr "Allgemein"
+
+#: contents/ui/configGeneral.qml
+msgid "Plasmoid Title:"
+msgstr "Titel des Plasmoids:"
+
+#: contents/ui/configGeneral.qml
+msgid "Leave empty to auto-collapse space..."
+msgstr "Leer lassen um den Platz einzuklappen …"
+
+#: contents/ui/configGeneral.qml
+msgid "Refresh Interval:"
+msgstr "Aktualisierungsintervall:"
+
+#: contents/ui/configGeneral.qml
+msgid "RSS Feed Sources:"
+msgstr "RSS Feed Quellen:"
+
+#: contents/ui/configGeneral.qml
+msgid "Remove Source"
+msgstr "Quelle entfernen"
+
+#: contents/ui/configGeneral.qml
+msgid "No feeds configured yet."
+msgstr "Noch keine Feeds eingerichtet."
+
+#: contents/ui/configGeneral.qml
+msgid "Add feed URL..."
+msgstr "Feed Adresse hinzufügen …"
+
+#: contents/ui/configGeneral.qml
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: contents/ui/configGeneral.qml
+msgid "Blacklist (Regex):"
+msgstr "Sperrliste (Regex):"
+
+#: contents/ui/configGeneral.qml
+msgid "Remove Pattern"
+msgstr "Muster entfernen"
+
+#: contents/ui/configGeneral.qml
+msgid "No exclusion patterns configured."
+msgstr "Keine Ausschlussmuster eingerichtet."
+
+#: contents/ui/configGeneral.qml
+msgid "Add block expression..."
+msgstr "Sperrausdruck hinzufügen …"
+
+#: contents/ui/main.qml
+msgid "Never"
+msgstr "Nie"
+
+#: contents/ui/main.qml
+msgid "Regex Filter Articles..."
+msgstr "Artikel via Regex filtern..."
+
+#: contents/ui/main.qml
+msgid "Last Updated: %1"
+msgstr "Zuletzt aktualisiert: %1"
+
+#: contents/ui/main.qml
+msgid "No articles match your filter."
+msgstr "Keine Artikel entsprechen dem Filter."
+
+#: contents/ui/main.qml
+msgid "No articles to show. Check your feed sources or your connection."
+msgstr "Keine Artikel vorhanden. Überprüfe deine Feed-Quellen oder die Internetverbindung."
+
+#: contents/ui/main.qml
+msgid "Config Access Error"
+msgstr "Fehler beim Zugriff auf die Einstellungen"
+
+#: contents/ui/main.qml
+msgid "No sources configured"
+msgstr "Keine Quellen eingerichtet"
+
+#: contents/ui/main.qml
+msgid "JSON Parse Error"
+msgstr "Fehler beim Auswerten der JSON-Daten"
+
+#: contents/ui/main.qml
+msgid "No Title"
+msgstr "Ohne Titel"
+
+#. i18n: Widget name, shown in the "Add Widgets" browser and the KDE Store.
+#: translate/metadata-strings.h
+msgctxt "@title widget name"
+msgid "RSS Feed Plasmoid"
+msgstr "RSS Feed Plasmoid"
+
+#. i18n: Short widget description, shown under the name in the widget browser.
+#: translate/metadata-strings.h
+msgctxt "@info widget description"
+msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
+msgstr "Ein schlanker RSS-Feed-Reader, erstellt mit Gemini AI,  gepatched mit Claude AI und Designed mit Menschenhand genauso wie jener Übersetzung."
+
+#~ msgctxt "@info widget description"
+#~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."
+#~ msgstr "Ein schlanker RSS-Feed-Reader, erstellt mit Gemini AI und gepatched mit Claude AI."

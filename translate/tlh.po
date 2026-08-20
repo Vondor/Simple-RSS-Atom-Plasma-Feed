@@ -1,0 +1,125 @@
+# Klingon (tlhIngan Hol) translation of rssreader
+# Draft rendering using vocabulary from The Klingon Dictionary (Marc Okrand).
+# NOT reviewed by a fluent speaker -- see https://www.kli.org/ before shipping.
+# Terms with no canonical equivalent (RSS, JSON, regex) are described, not coined.
+# Copyright (C) 2026
+# This file is distributed under the same license as the rssreader package.
+# Unverified draft, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: rssreader\n"
+"Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
+"POT-Creation-Date: 2026-08-20 19:11+0000\n"
+"PO-Revision-Date: 2026-07-23 18:11+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Klingon <https://www.kli.org/>\n"
+"Language: tlh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: contents/config/config.qml
+msgid "General"
+msgstr "motlh"
+
+#: contents/ui/configGeneral.qml
+msgid "Plasmoid Title:"
+msgstr "Doch pong:"
+
+#: contents/ui/configGeneral.qml
+msgid "Leave empty to auto-collapse space..."
+msgstr "chIm chugh, Daq teqlu'…"
+
+#: contents/ui/configGeneral.qml
+msgid "Refresh Interval:"
+msgstr "chu'moHmeH poH:"
+
+#: contents/ui/configGeneral.qml
+msgid "RSS Feed Sources:"
+msgstr "RSS jabbI'ID mungmey:"
+
+#: contents/ui/configGeneral.qml
+msgid "Remove Source"
+msgstr "mung yIteq"
+
+#: contents/ui/configGeneral.qml
+msgid "No feeds configured yet."
+msgstr "jabbI'ID tu'lu'be'."
+
+#: contents/ui/configGeneral.qml
+msgid "Add feed URL..."
+msgstr "jabbI'ID Daq yIchel…"
+
+#: contents/ui/configGeneral.qml
+msgid "Add"
+msgstr "yIchel"
+
+#: contents/ui/configGeneral.qml
+msgid "Blacklist (Regex):"
+msgstr "tetlh qIj (mu' pat):"
+
+#: contents/ui/configGeneral.qml
+msgid "Remove Pattern"
+msgstr "mu' pat yIteq"
+
+#: contents/ui/configGeneral.qml
+msgid "No exclusion patterns configured."
+msgstr "mu' pat tu'lu'be'."
+
+#: contents/ui/configGeneral.qml
+msgid "Add block expression..."
+msgstr "botmeH mu'tlhegh yIchel…"
+
+#: contents/ui/main.qml
+msgid "Never"
+msgstr "not"
+
+#: contents/ui/main.qml
+msgid "Regex Filter Articles..."
+msgstr "ghItlhmey yIwIv…"
+
+#: contents/ui/main.qml
+msgid "Last Updated: %1"
+msgstr "chu'moHlu'pu': %1"
+
+#: contents/ui/main.qml
+msgid "No articles match your filter."
+msgstr "ghItlh rap tu'lu'be'."
+
+#: contents/ui/main.qml
+msgid "No articles to show. Check your feed sources or your connection."
+msgstr "ghItlh tu'lu'be'. mungmey joq rarwI' yInuD."
+
+#: contents/ui/main.qml
+msgid "Config Access Error"
+msgstr "naw' Qagh"
+
+#: contents/ui/main.qml
+msgid "No sources configured"
+msgstr "mung tu'lu'be'"
+
+#: contents/ui/main.qml
+msgid "JSON Parse Error"
+msgstr "JSON yajmeH Qagh"
+
+#: contents/ui/main.qml
+msgid "No Title"
+msgstr "pong Hutlh"
+
+#. i18n: Widget name, shown in the "Add Widgets" browser and the KDE Store.
+#: translate/metadata-strings.h
+msgctxt "@title widget name"
+msgid "RSS Feed Plasmoid"
+msgstr "RSS laDwI'"
+
+#. i18n: Short widget description, shown under the name in the widget browser.
+#: translate/metadata-strings.h
+msgctxt "@info widget description"
+msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
+msgstr "RSS jabbI'ID laDwI' ngeD. Gemini AI lo'lu'taHvIS chenmoHlu'; Claude AI lo'lu'taHvIS choHlu'; tera'ngan nab; tera'ngan mughpu' je."
+
+#~ msgctxt "@info widget description"
+#~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."
+#~ msgstr "RSS jabbI'ID laDwI' ngeD. Gemini AI lo'lu'taHvIS chenmoHlu'; Claude AI lo'lu'taHvIS choHlu'."

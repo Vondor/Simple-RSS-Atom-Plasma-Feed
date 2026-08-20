@@ -1,4 +1,5 @@
 {
+    "KPackageStructure": "Plasma/Applet",
     "KPlugin": {
         "Authors": [
             {
@@ -7,13 +8,17 @@
             }
         ],
         "Category": "Utilities",
-        "Description": "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI.",
+        "Description": "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations.",
+        "Description[de]": "Ein schlanker RSS-Feed-Reader, erstellt mit Gemini AI,  gepatched mit Claude AI und Designed mit Menschenhand genauso wie jener Übersetzung.",
+        "Description[qya]": "RSS sinyaron cendalë, Atanen cantaina. Gemini AI carnë, Claude AI envinyatanë; i quettar Atanion nar.",
+        "Description[tlh]": "RSS jabbI'ID laDwI' ngeD. Gemini AI lo'lu'taHvIS chenmoHlu'; Claude AI lo'lu'taHvIS choHlu'; tera'ngan nab; tera'ngan mughpu' je.",
         "Icon": "rssreader",
         "Id": "org.kde.plasma.rssreader",
         "License": "GPL-3.0+",
         "Name": "RSS Feed Plasmoid",
-        "Version": "1.6"
+        "Name[qya]": "RSS Cendalë",
+        "Name[tlh]": "RSS laDwI'",
+        "Version": "1.6.1"
     },
-    "KPackageStructure": "Plasma/Applet",
     "X-Plasma-API-Minimum-Version": "6.0"
 }
