@@ -4,7 +4,8 @@ Translations live in this folder as gettext `.po` files and are compiled into
 `contents/locale/<lang>/LC_MESSAGES/plasma_applet_org.kde.plasma.rssreader.mo`,
 so they travel inside the `.plasmoid` — nothing has to be installed separately.
 
-Currently shipped: **de** (German), **en** (English, source), **pl** (Polish).
+Currently shipped: **de** (German), **en** (English, source), plus **tlh** (Klingon)
+and **qya** (Quenya) as easter eggs.
 
 ## Adding a new language
 
@@ -29,7 +30,7 @@ Requires `gettext` (`sudo apt install gettext` / `sudo pacman -S gettext`).
 
 Test a specific language without changing your system settings:
 
-    LANGUAGE=pl LANG=pl_PL.UTF-8 plasmoidviewer -a .
+    LANGUAGE=de LANG=de_DE.UTF-8 plasmoidviewer -a .
 
 The language pack for the locale you are testing has to be installed, otherwise
 Plasma falls back to English.

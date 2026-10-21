@@ -14,7 +14,7 @@
         "Description[tlh]": "RSS jabbI'ID laDwI' ngeD. Gemini AI lo'lu'taHvIS chenmoHlu'; Claude AI lo'lu'taHvIS choHlu'; tera'ngan nab; tera'ngan mughpu' je.",
         "Icon": "rssreader",
         "Id": "org.kde.plasma.rssreader",
-        "License": "GPL-3.0+",
+        "License": "GPL-3.0-or-later",
         "Name": "RSS Feed Plasmoid",
         "Name[qya]": "RSS Cendalë",
         "Name[tlh]": "RSS laDwI'",
