@@ -531,7 +531,7 @@ PlasmoidItem {
             } catch(e) {}
 
             targetArray.push({
-                "title": titleM ? stripTags(titleM[1]) : "No Title",
+                "title": titleM ? stripTags(titleM[1]) : i18n("No Title"),
                 "source": feedTitle,
                 "date": fmtDate,
                 "timestamp": ts,
