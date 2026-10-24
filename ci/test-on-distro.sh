@@ -115,9 +115,10 @@ view() {
     set -e
 }
 
-# qml_errors <log file>: prints the QML errors that come from the widget
+# qml_errors <log file>: prints the QML errors that come from the widget's own
+# files. Errors from Plasma's containment around it are not ours to fail on.
 qml_errors() {
-    grep -E "$ID_PLUGIN|plasmoids/|/broken/|module \".*\" is not installed" "$1" \
+    grep -E "plasmoids/$ID_PLUGIN/|/broken/" "$1" \
         | grep -iE 'error|is not installed|is not a type|ReferenceError|TypeError|Cannot'
 }
 
