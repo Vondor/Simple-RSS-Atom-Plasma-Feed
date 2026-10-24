@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # Weekly run, so a distribution update that breaks the widget shows up
+  # even when nothing in this repository changed.
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package and translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gettext
+        run: sudo apt-get update -qq && sudo apt-get install -y -q gettext
+
+      - name: Check metadata, layout and icon
+        run: python3 ci/check-package.py
+
+      - name: Check translations are up to date
+        run: sh ci/check-translations.sh
+
+      - name: Build .plasmoid
+        id: build
+        run: echo "file=$(sh ci/build-plasmoid.sh)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plasmoid
+          path: ${{ steps.build.outputs.file }}
+          if-no-files-found: error
+
+  distro:
+    name: ${{ matrix.name }}
+    needs: package
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "Kubuntu 26.04 LTS", image: "ubuntu:26.04", experimental: false }
+          - { name: "Debian 13 (trixie)", image: "debian:trixie", experimental: false }
+          - { name: "Fedora 43",          image: "fedora:43",     experimental: false }
+          - { name: "Fedora 44",          image: "fedora:44",     experimental: false }
+          # Early warning for the next releases; allowed to fail.
+          - { name: "Ubuntu devel (next)",   image: "ubuntu:devel",   experimental: true }
+          - { name: "Fedora Rawhide (next)", image: "fedora:rawhide", experimental: true }
+    steps:
+      # The base images have no git, so checkout falls back to a tarball
+      # download. Only the test script is used from it; the widget under test
+      # is the .plasmoid built above, exactly as users download it.
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plasmoid
+          path: dist
+
+      - name: Install stock Plasma and test the widget
+        run: sh ci/test-on-distro.sh dist/*.plasmoid

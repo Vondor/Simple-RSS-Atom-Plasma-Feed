@@ -1,0 +1,43 @@
+name: Release
+
+# Push a tag like v1.6.2 to build the .plasmoid and attach it to a GitHub
+# release. The tag must match "Version" in metadata.json.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gettext
+        run: sudo apt-get update -qq && sudo apt-get install -y -q gettext
+
+      - name: Check package and translations
+        run: |
+          python3 ci/check-package.py
+          sh ci/check-translations.sh
+
+      - name: Check tag matches metadata.json
+        run: |
+          version=$(python3 -c 'import json; print(json.load(open("metadata.json"))["KPlugin"]["Version"])')
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match metadata.json Version ${version} (expected v${version})"
+            exit 1
+          fi
+
+      - name: Build .plasmoid
+        id: build
+        run: echo "file=$(sh ci/build-plasmoid.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${GITHUB_REF_NAME}" "${{ steps.build.outputs.file }}"
+          --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag
