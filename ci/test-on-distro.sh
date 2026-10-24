@@ -49,6 +49,12 @@ for mod in $imports; do
         f="$d/$(echo "$mod" | tr . /)/qmldir"
         [ -f "$f" ] && { found="$f"; break; }
     done
+    # On older libplasma (e.g. Plasma 6.3 in Debian 13) these two modules
+    # have no qmldir: plasmashell registers them from libPlasmaQuick at
+    # runtime. The plasmoidviewer step below checks that they really load.
+    if [ -z "$found" ] && { [ "$mod" = org.kde.plasma.plasmoid ] || [ "$mod" = org.kde.plasma.configuration ]; }; then
+        found=$(ls /usr/lib/x86_64-linux-gnu/libPlasmaQuick.so.6 /usr/lib64/libPlasmaQuick.so.6 2>/dev/null | head -n1)
+    fi
     if [ -n "$found" ]; then
         echo "[ok] import ${mod}  (package $(owner "$found"))"
     else
