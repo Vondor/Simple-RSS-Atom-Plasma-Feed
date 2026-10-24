@@ -18,7 +18,7 @@ jobs:
     name: Package and translations
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install gettext
         run: sudo apt-get update -qq && sudo apt-get install -y -q gettext
@@ -33,7 +33,7 @@ jobs:
         id: build
         run: echo "file=$(sh ci/build-plasmoid.sh)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: plasmoid
           path: ${{ steps.build.outputs.file }}
@@ -60,9 +60,9 @@ jobs:
       # The base images have no git, so checkout falls back to a tarball
       # download. Only the test script is used from it; the widget under test
       # is the .plasmoid built above, exactly as users download it.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: plasmoid
           path: dist

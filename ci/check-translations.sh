@@ -16,8 +16,9 @@ sh "$WORK/translate/merge.sh" >/dev/null
 sh "$WORK/translate/build.sh"
 
 status=0
+# POT-Creation-Date is ignored: merge.sh stamps the current time on every run.
 for f in translate/template.pot metadata.json; do
-    if ! diff -u "$SRC/$f" "$WORK/$f"; then
+    if ! diff -u -I '^"POT-Creation-Date:' "$SRC/$f" "$WORK/$f"; then
         echo "::error file=$f::$f is out of date. Run sh translate/merge.sh && sh translate/build.sh and commit the result."
         status=1
     fi
