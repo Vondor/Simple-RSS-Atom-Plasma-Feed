@@ -23,15 +23,17 @@ case "${ID}:${ID_LIKE:-}" in
         apt-get update -qq
         apt-get install -y -q kde-plasma-desktop unzip >/dev/null
         owner() { dpkg -S "$1" 2>/dev/null | cut -d: -f1; }
+        version() { dpkg-query -W -f '${Version}' "$1" 2>/dev/null; }
         ;;
     fedora:*|*:*fedora*)
         dnf install -y -q @kde-desktop unzip >/dev/null
         owner() { rpm -qf --qf '%{NAME}\n' "$1" 2>/dev/null; }
+        version() { rpm -q --qf '%{VERSION}' "$1" 2>/dev/null; }
         ;;
     *)
         echo "Unsupported distribution: ${ID}"; exit 1 ;;
 esac
-echo "Plasma: $(plasmashell --version 2>/dev/null || echo unknown)"
+echo "plasma-workspace $(version plasma-workspace)"
 
 # --- 2. Every QML import is provided by the stock install -------------------
 QML_DIRS="/usr/lib/x86_64-linux-gnu/qt6/qml /usr/lib64/qt6/qml /usr/lib/qt6/qml"
@@ -85,33 +87,60 @@ fi
 echo "[ok] installed with kpackagetool6"
 
 # --- 4. Load the widget ------------------------------------------------------
-# plasmoidviewer is a developer tool (plasma-sdk), so it is installed only now,
-# after the stock checks above. It runs headless for 20 seconds; the widget
-# must load without QML errors.
+# plasmoidviewer (plasma-sdk) and dbus-run-session (dbus-daemon) are test
+# tools, so they are installed only now, after the stock checks above.
+# plasmoidviewer runs headless for 20 seconds; the widget must load without
+# QML errors.
 case "${ID}:${ID_LIKE:-}" in
-    fedora:*|*:*fedora*) dnf install -y -q plasma-sdk >/dev/null ;;
-    *) apt-get install -y -q --no-install-recommends plasma-sdk >/dev/null ;;
+    fedora:*|*:*fedora*) dnf install -y -q plasma-sdk dbus-daemon >/dev/null ;;
+    *) apt-get install -y -q --no-install-recommends plasma-sdk dbus-daemon >/dev/null ;;
 esac
 
 RUNTIME="/tmp/runtime-$TESTER"
 mkdir -p "$RUNTIME" && chown "$TESTER" "$RUNTIME" && chmod 700 "$RUNTIME"
+chmod 755 "$WORK"
+
+# view <applet id or package dir> <log file>: prints plasmoidviewer's exit code
+view() {
+    set +e
+    as_tester XDG_RUNTIME_DIR="$RUNTIME" QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
+        timeout 20 dbus-run-session -- plasmoidviewer -a "$1" >"$2" 2>&1
+    echo $?
+    set -e
+}
+
+# qml_errors <log file>: prints the QML errors that come from the widget
+qml_errors() {
+    grep -E "$ID_PLUGIN|plasmoids/|/broken/|module \".*\" is not installed" "$1" \
+        | grep -iE 'error|is not installed|is not a type|ReferenceError|TypeError|Cannot'
+}
+
 LOG="$WORK/plasmoidviewer.log"
-set +e
-as_tester XDG_RUNTIME_DIR="$RUNTIME" QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-    timeout 20 dbus-run-session -- plasmoidviewer -a "$ID_PLUGIN" >"$LOG" 2>&1
-rc=$?
-set -e
-cat "$LOG"
+rc=$(view "$ID_PLUGIN" "$LOG")
+echo "::group::plasmoidviewer log"; cat "$LOG"; echo "::endgroup::"
 
 # 124 = still running when the timeout hit, which is what we want.
 if [ "$rc" != 124 ] && [ "$rc" != 0 ]; then
     echo "::error::plasmoidviewer exited with code $rc"
     exit 1
 fi
-if grep -E "$ID_PLUGIN|plasmoids/|module \".*\" is not installed" "$LOG" \
-        | grep -qiE 'error|is not installed|is not a type|ReferenceError|TypeError|Cannot'; then
-    echo "::error::the widget logged QML errors while loading (see log above)"
+if qml_errors "$LOG"; then
+    echo "::error::the widget logged QML errors while loading (see lines above)"
     exit 1
 fi
 echo "[ok] widget loads in plasmoidviewer"
+
+# Self-test: the same check must catch a copy with a missing QML module,
+# otherwise a pass above would mean nothing.
+cp -a "$INSTALLED" "$WORK/broken"
+sed -i '0,/^import QtCore/s//import QtCore\nimport org.example.missing/' "$WORK/broken/contents/ui/main.qml"
+chown -R "$TESTER" "$WORK/broken"
+view "$WORK/broken" "$WORK/broken.log" >/dev/null
+if qml_errors "$WORK/broken.log" >/dev/null; then
+    echo "[ok] self-test: a missing QML module is detected"
+else
+    echo "::group::self-test log"; cat "$WORK/broken.log"; echo "::endgroup::"
+    echo "::error::self-test failed: a deliberately broken copy loaded without a detected error"
+    exit 1
+fi
 echo "== All checks passed on ${PRETTY_NAME}"
