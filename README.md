@@ -1,5 +1,7 @@
 # Simple RSS / Atom Plasma Feed
 
+[![CI](https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed/actions/workflows/ci.yml/badge.svg)](https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed/actions/workflows/ci.yml)
+
 A lightweight RSS and Atom feed reader widget (plasmoid) for **KDE Plasma 6**.
 It merges any number of feeds into one list, newest first, right on your
 desktop or panel.
@@ -96,6 +98,26 @@ Check the QML with `qmllint` (from Qt 6), for example
 The translation workflow (`merge.sh`, `build.sh`) is described in
 [`translate/README.md`](translate/README.md).
 
+### Continuous integration
+
+Every push and pull request (and a weekly scheduled run) builds the
+`.plasmoid` and tests it on fresh Kubuntu, Debian and Fedora containers that
+contain only the distribution's stock Plasma packages. It fails if a QML
+import is not provided by a stock install, if `kpackagetool6` cannot install
+the file, or if the widget logs QML errors while loading. It also checks
+`metadata.json`, the icon files and that the compiled translations match the
+`.po` files. The scripts live in [`ci/`](ci) and run locally too:
+
+```sh
+python3 ci/check-package.py      # metadata, layout, icon
+sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
+sh ci/build-plasmoid.sh          # writes dist/rssreader-<version>.plasmoid
+```
+
+To publish a release, push a tag that matches `Version` in `metadata.json`,
+for example `git tag v1.6.2 && git push origin v1.6.2`. The release workflow
+attaches the built `.plasmoid` to a GitHub release, ready for the KDE Store.
+
 ### Project layout
 
 ```
@@ -105,6 +127,7 @@ contents/config/       Configuration schema and settings pages
 contents/icons/        Widget icon
 contents/locale/       Compiled translations (.mo), bundled with the widget
 translate/             Translation sources (.po/.pot) and helper scripts
+ci/                    Checks and packaging used by the GitHub Actions workflows
 ```
 
 ## Contributing
