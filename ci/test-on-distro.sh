@@ -109,7 +109,9 @@ chmod 755 "$WORK"
 # view <applet id or package dir> <log file>: prints plasmoidviewer's exit code
 view() {
     set +e
+    # QT_FORCE_STDERR_LOGGING: Fedora's Qt logs to the journal otherwise.
     as_tester XDG_RUNTIME_DIR="$RUNTIME" QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
+        QT_FORCE_STDERR_LOGGING=1 \
         timeout 20 dbus-run-session -- plasmoidviewer -a "$1" >"$2" 2>&1
     echo $?
     set -e
@@ -141,6 +143,8 @@ echo "[ok] widget loads in plasmoidviewer"
 # otherwise a pass above would mean nothing.
 cp -a "$INSTALLED" "$WORK/broken"
 sed -i '0,/^import QtCore/s//import QtCore\nimport org.example.missing/' "$WORK/broken/contents/ui/main.qml"
+# A different Id, so plasmoidviewer cannot pick the installed copy instead.
+sed -i "s/\"$ID_PLUGIN\"/\"$ID_PLUGIN.broken\"/" "$WORK/broken/metadata.json"
 chown -R "$TESTER" "$WORK/broken"
 view "$WORK/broken" "$WORK/broken.log" >/dev/null
 if qml_errors "$WORK/broken.log" >/dev/null; then
