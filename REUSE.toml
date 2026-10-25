@@ -1,0 +1,12 @@
+version = 1
+SPDX-PackageName = "Simple RSS / Atom Plasma Feed"
+SPDX-PackageDownloadLocation = "https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed"
+
+# The publisher's logo (SerpentSoftware, the maintainer's publisher name). It
+# is a brand mark, not the widget icon, and outside the project's GPL: it may
+# be copied unmodified with the project and shown to name the publisher. The
+# license text is in LICENSES/ and leaves the code license untouched.
+[[annotations]]
+path = ["docs/branding/serpentsoftware-mark.svg", "docs/branding/serpentsoftware-mark-dark.svg"]
+SPDX-FileCopyrightText = "2026 SerpentSoftware"
+SPDX-License-Identifier = "LicenseRef-SerpentSoftware-Logo"
