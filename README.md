@@ -103,6 +103,7 @@ metadata.json          Widget metadata (id, version, name/description translatio
 contents/ui/           QML: main.qml (widget), configGeneral.qml (settings page)
 contents/config/       Configuration schema and settings pages
 contents/icons/        Widget icon
+docs/branding/         Publisher logo (SerpentSoftware), not part of the widget
 contents/locale/       Compiled translations (.mo), bundled with the widget
 translate/             Translation sources (.po/.pot) and helper scripts
 ```
@@ -119,6 +120,16 @@ Made by Fabian Drywa ([dev@serpentsoftware.de](mailto:dev@serpentsoftware.de)).
 The code was created with the help of Gemini AI and refined with Claude AI;
 the design and translations are by humans.
 
+## Publisher
+
+Simple RSS / Atom Plasma Feed is published by
+[SerpentSoftware](https://serpentsoftware.de).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/branding/serpentsoftware-mark-dark.svg">
+  <img src="docs/branding/serpentsoftware-mark.svg" alt="SerpentSoftware logo" width="64">
+</picture>
+
 ## License
 
 Copyright © 2026 Fabian Drywa
@@ -127,3 +138,11 @@ This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version (`GPL-3.0-or-later`). See [LICENSE](LICENSE) for the full text.
+
+The SerpentSoftware logo in `docs/branding/` is the publisher's brand mark and
+is not covered by the GPL (`LicenseRef-SerpentSoftware-Logo`, see
+[LICENSES/](LICENSES/LicenseRef-SerpentSoftware-Logo.txt) and
+[REUSE.toml](REUSE.toml)): copy it unmodified with the project, but remove it
+if you publish a fork under your own name. The widget icon
+(`contents/icons/rssreader.svg`) is part of the project and stays under the
+GPL.
