@@ -11,7 +11,7 @@ PKGDIR="$(dirname "$DIR")"
 
 plasmoidName=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["KPlugin"]["Id"])' "$PKGDIR/metadata.json")
 widgetName="${plasmoidName##*.}"          # strip namespace -> rssreader
-bugAddress=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1]))["KPlugin"]; print(d.get("Website") or (d.get("Authors") or [{}])[0].get("Email",""))' "$PKGDIR/metadata.json")
+bugAddress=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1]))["KPlugin"]; print((d.get("Authors") or [{}])[0].get("Email") or d.get("Website", ""))' "$PKGDIR/metadata.json")
 projectName="plasma_applet_${plasmoidName}"
 
 if [ -z "$plasmoidName" ]; then

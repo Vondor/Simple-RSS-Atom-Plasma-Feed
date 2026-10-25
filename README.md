@@ -145,8 +145,8 @@ the design and translations are by humans.
 
 ## Publisher
 
-Simple RSS / Atom Plasma Feed is published by
-[SerpentSoftware](https://serpentsoftware.de).
+Simple RSS / Atom Plasma Feed is published by SerpentSoftware. Its homepage is
+the [KDE Store page](https://store.kde.org/p/2363221).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/branding/serpentsoftware-mark-dark.svg">
