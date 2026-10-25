@@ -18,7 +18,8 @@
         "Name": "RSS Feed Plasmoid",
         "Name[qya]": "RSS Cendalë",
         "Name[tlh]": "RSS laDwI'",
-        "Version": "1.6.1"
+        "Version": "1.6.1",
+        "Website": "https://store.kde.org/p/2363221"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
 }
