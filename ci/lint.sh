@@ -24,6 +24,8 @@ FIX=0
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+TAB="$(printf '\t')"
+CR="$(printf '\r')"
 status=0
 err() { echo "::error file=$1::$2"; status=1; }
 section_done() {
@@ -42,10 +44,10 @@ git ls-files | grep -vE '\.(mo|png)$|^LICENSE$|^LICENSES/' > "$WORK/files"
 # --- 1. Text hygiene --------------------------------------------------------
 while IFS= read -r f; do
     [ -f "$f" ] || continue
-    if grep -q "$(printf '\r')" "$f"; then
+    if grep -q "$CR" "$f"; then
         err "$f" "Windows line endings (CRLF); use LF"
     fi
-    if grep -nE ' +$|	+$' "$f" > "$WORK/hits"; then
+    if grep -nE "[ $TAB]+\$" "$f" > "$WORK/hits"; then
         line=$(head -n1 "$WORK/hits" | cut -d: -f1)
         err "$f" "trailing whitespace on $(wc -l < "$WORK/hits") line(s), first on line $line"
     fi
@@ -54,7 +56,7 @@ while IFS= read -r f; do
     fi
     case "$f" in
         *.qml|*.sh|*.py|*.xml|*.json|*.yml|*.svg)
-            if grep -q '	' "$f"; then err "$f" "tab character; indent with spaces"; fi ;;
+            if grep -q "$TAB" "$f"; then err "$f" "tab character; indent with spaces"; fi ;;
     esac
 done < "$WORK/files"
 section_done "text hygiene"
