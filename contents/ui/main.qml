@@ -141,6 +141,17 @@ PlasmoidItem {
     // instead of the metadata "Icon", which renders blank here. The MouseArea is
     // required for a custom compact view: it toggles the full popup on click.
     compactRepresentation: MouseArea {
+        // Reachable and usable from the keyboard and announced by screen readers.
+        activeFocusOnTab: true
+        Accessible.name: root.currentTitle !== "" ? root.currentTitle : Plasmoid.title
+        Accessible.role: Accessible.Button
+        Accessible.onPressAction: root.expanded = !root.expanded
+        Keys.onReturnPressed: root.expanded = !root.expanded
+        Keys.onEnterPressed: root.expanded = !root.expanded
+        Keys.onSpacePressed: root.expanded = !root.expanded
+        hoverEnabled: true
+        QQC2.ToolTip.visible: containsMouse
+        QQC2.ToolTip.text: Accessible.name
         onClicked: root.expanded = !root.expanded
 
         Image {
@@ -196,6 +207,11 @@ PlasmoidItem {
                     anchors.verticalCenter: parent.verticalCenter
                     icon.name: "edit-clear"
                     visible: root.searchQuery !== ""
+                    text: i18n("Clear search")
+                    display: QQC2.AbstractButton.IconOnly
+                    Accessible.name: text
+                    QQC2.ToolTip.visible: hovered || visualFocus
+                    QQC2.ToolTip.text: text
                     onClicked: {
                         // Clearing root.searchQuery alone isn't enough: once the user has
                         // typed anything, the one-way "text: root.searchQuery" binding above
@@ -216,7 +232,7 @@ PlasmoidItem {
                     return root.allArticlesRaw.length > 0 ? i18n("No feed could be loaded. Showing articles from %1.", root.lastUpdatedText) : i18n("No feed could be loaded.");
                 }
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.8
-                opacity: 0.6
+                color: Kirigami.Theme.disabledTextColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -266,11 +282,24 @@ PlasmoidItem {
                 model: articlesModel
                 spacing: Kirigami.Units.smallSpacing
                 boundsBehavior: Flickable.StopAtBounds
+                // Keyboard: Tab reaches the list, arrow keys move, Enter opens the article.
+                activeFocusOnTab: true
+                keyNavigationEnabled: true
+                currentIndex: -1
+                highlightFollowsCurrentItem: true
+                Keys.onReturnPressed: openCurrent()
+                Keys.onEnterPressed: openCurrent()
+                function openCurrent() {
+                    if (currentItem)
+                        currentItem.clicked();
+                }
 
                 delegate: PlasmaComponents.ItemDelegate {
                     id: delegateItem
                     width: listView.width
                     height: delegateColumn.implicitHeight + (Kirigami.Units.mediumSpacing * 2)
+                    highlighted: ListView.isCurrentItem && listView.activeFocus
+                    Accessible.name: model.title + ", " + model.source + ", " + model.date
                     // Feed links are untrusted: open only web addresses, never file:, javascript: or app schemes.
                     onClicked: if (/^https?:\/\//i.test(model.link))
                         Qt.openUrlExternally(model.link)
@@ -294,7 +323,7 @@ PlasmoidItem {
                             text: model.source + " - " + model.date
                             textFormat: Text.PlainText
                             font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85
-                            opacity: 0.65
+                            color: Kirigami.Theme.disabledTextColor
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
@@ -307,7 +336,7 @@ PlasmoidItem {
                     text: root.searchQuery !== "" ? i18n("No articles match your search.") : i18n("No articles to show. Check your feed sources or your connection.")
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
-                    opacity: 0.5
+                    color: Kirigami.Theme.disabledTextColor
                     font.italic: true
                     visible: articlesModel.count === 0
                 }

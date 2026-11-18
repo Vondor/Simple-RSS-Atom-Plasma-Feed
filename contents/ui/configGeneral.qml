@@ -189,6 +189,7 @@ Item {
             QQC2.TextField {
                 id: titleField
                 placeholderText: i18n("Leave empty to show no title")
+                Accessible.name: titleFieldLabel.text
                 Layout.fillWidth: true
             }
         }
@@ -206,6 +207,7 @@ Item {
             }
             QQC2.SpinBox {
                 id: refreshTimeSpinBox
+                Accessible.name: refreshTimeSpinBoxLabel.text
                 from: 1
                 to: 1440
             }
@@ -249,9 +251,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: Kirigami.Theme.backgroundColor
-                    border.color: Kirigami.Theme.textColor
+                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.85)
                     border.width: 1
-                    opacity: 0.85
                     radius: 4
 
                     QQC2.ScrollView {
@@ -280,9 +281,11 @@ Item {
                                     }
                                     QQC2.ToolButton {
                                         icon.name: "edit-delete"
+                                        text: i18n("Remove Source")
                                         display: QQC2.AbstractButton.IconOnly
-                                        QQC2.ToolTip.visible: parent.parent.hovered
-                                        QQC2.ToolTip.text: i18n("Remove Source")
+                                        Accessible.name: text
+                                        QQC2.ToolTip.visible: parent.parent.hovered || hovered || visualFocus
+                                        QQC2.ToolTip.text: text
                                         Layout.preferredWidth: Kirigami.Units.gridUnit * 1.5
                                         Layout.preferredHeight: Kirigami.Units.gridUnit * 1.5
                                         onClicked: {
@@ -296,7 +299,7 @@ Item {
                             QQC2.Label {
                                 anchors.centerIn: parent
                                 text: i18n("No feeds configured yet.")
-                                opacity: 0.4
+                                color: Kirigami.Theme.disabledTextColor
                                 font.italic: true
                                 visible: feedsModel.count === 0
                             }
@@ -367,9 +370,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: Kirigami.Theme.backgroundColor
-                    border.color: Kirigami.Theme.textColor
+                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.85)
                     border.width: 1
-                    opacity: 0.85
                     radius: 4
 
                     QQC2.ScrollView {
@@ -398,9 +400,11 @@ Item {
                                     }
                                     QQC2.ToolButton {
                                         icon.name: "edit-delete"
+                                        text: i18n("Remove Pattern")
                                         display: QQC2.AbstractButton.IconOnly
-                                        QQC2.ToolTip.visible: parent.parent.hovered
-                                        QQC2.ToolTip.text: i18n("Remove Pattern")
+                                        Accessible.name: text
+                                        QQC2.ToolTip.visible: parent.parent.hovered || hovered || visualFocus
+                                        QQC2.ToolTip.text: text
                                         Layout.preferredWidth: Kirigami.Units.gridUnit * 1.5
                                         Layout.preferredHeight: Kirigami.Units.gridUnit * 1.5
                                         onClicked: {
@@ -414,7 +418,7 @@ Item {
                             QQC2.Label {
                                 anchors.centerIn: parent
                                 text: i18n("No articles are hidden.")
-                                opacity: 0.4
+                                color: Kirigami.Theme.disabledTextColor
                                 font.italic: true
                                 visible: regexModel.count === 0
                             }
@@ -446,7 +450,7 @@ Item {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
                     font: Kirigami.Theme.smallFont
-                    opacity: 0.7
+                    color: Kirigami.Theme.disabledTextColor
                     text: i18n("Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too.")
                 }
             }

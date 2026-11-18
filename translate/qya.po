@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:53+0000\n"
+"POT-Creation-Date: 2026-11-18 11:05+0000\n"
 "PO-Revision-Date: 2026-07-23 18:15+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Quenya <https://eldamo.org/>\n"
@@ -92,6 +92,10 @@ msgstr "Ullumë"
 #: contents/ui/main.qml
 msgid "Search articles…"
 msgstr "Á cesta sinyar…"
+
+#: contents/ui/main.qml
+msgid "Clear search"
+msgstr ""
 
 #: contents/ui/main.qml
 msgid "Last Updated: %1"
