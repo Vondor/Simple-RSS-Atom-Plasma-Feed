@@ -235,13 +235,14 @@ Item {
         // This row and the Blacklist row are the two that grow when the
         // dialog is taller; every other row keeps its natural height. The
         // leftover space is split between them in feedsListStretch :
-        // regexListStretch, and preferred/minimum both carry that ratio so
-        // the proportion holds at every dialog size.
+        // regexListStretch. The preferred/minimum heights sit on the list
+        // frames, not on the whole row, so the input field, the warning and
+        // the help text below a list never eat into the list's own height
+        // (with the help text inside the row budget, the filter list shrank
+        // to less than one entry in a normal-sized dialog).
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.preferredHeight: page.feedsListStretch * Kirigami.Units.gridUnit * 6
-            Layout.minimumHeight: page.feedsListStretch * Kirigami.Units.gridUnit * 3
             spacing: Kirigami.Units.smallSpacing
 
             QQC2.Label {
@@ -260,6 +261,8 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.preferredHeight: page.feedsListStretch * Kirigami.Units.gridUnit * 6
+                    Layout.minimumHeight: page.feedsListStretch * Kirigami.Units.gridUnit * 3
                     color: Kirigami.Theme.backgroundColor
                     border.color: Qt.alpha(Kirigami.Theme.textColor, 0.85)
                     border.width: 1
@@ -359,8 +362,6 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.preferredHeight: page.regexListStretch * Kirigami.Units.gridUnit * 6
-            Layout.minimumHeight: page.regexListStretch * Kirigami.Units.gridUnit * 3
             spacing: Kirigami.Units.smallSpacing
 
             QQC2.Label {
@@ -379,6 +380,8 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.preferredHeight: page.regexListStretch * Kirigami.Units.gridUnit * 6
+                    Layout.minimumHeight: page.regexListStretch * Kirigami.Units.gridUnit * 3
                     color: Kirigami.Theme.backgroundColor
                     border.color: Qt.alpha(Kirigami.Theme.textColor, 0.85)
                     border.width: 1
