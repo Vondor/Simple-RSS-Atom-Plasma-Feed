@@ -121,7 +121,7 @@ docs/                         decisions, roadmap, architecture, glossary, threat
    ```
    python3 ci/check-package.py      # metadata, layout, icon
    sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
-   sh ci/build-plasmoid.sh          # writes dist/rssreader-<version>.plasmoid
+   sh ci/build-plasmoid.sh          # writes dist/SimpleRSSFeed-<version with dashes>.plasmoid
    reuse lint                       # licence headers (pipx run reuse lint)
    /usr/lib/qt6/bin/qmllint contents/ui/*.qml   # expect some Kirigami stub noise
    ```

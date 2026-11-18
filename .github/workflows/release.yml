@@ -1,7 +1,10 @@
 name: Release
 
-# Push a tag like v1.6.2 to build the .plasmoid and attach it to a GitHub
-# release. The tag must match "Version" in metadata.json.
+# Push a tag v<Version> (for example v1.261118.0) to build the two files for
+# the KDE Store and attach them to a GitHub release:
+#   SimpleRSSFeed-1-261118-0.plasmoid  and  SimpleRSSFeed-1-261118-0.tar.gz
+# The tag must match "Version" in metadata.json, and Version must follow the
+# numbering 1.YYMMDD.N (D-011; ci/next-version.sh prints the next one).
 on:
   push:
     tags: ["v*"]
@@ -23,21 +26,32 @@ jobs:
           python3 ci/check-package.py
           sh ci/check-translations.sh
 
-      - name: Check tag matches metadata.json
+      - name: Check tag matches metadata.json and the numbering
         run: |
           version=$(python3 -c 'import json; print(json.load(open("metadata.json"))["KPlugin"]["Version"])')
           if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
             echo "::error::Tag ${GITHUB_REF_NAME} does not match metadata.json Version ${version} (expected v${version})"
             exit 1
           fi
+          if ! echo "${version}" | grep -Eq '^1\.[0-9]{6}\.(0|[1-9][0-9]*)$'; then
+            echo "::error::Version ${version} is not 1.YYMMDD.N (D-011); run sh ci/next-version.sh"
+            exit 1
+          fi
 
-      - name: Build .plasmoid
+      - name: Build .plasmoid and source .tar.gz
         id: build
-        run: echo "file=$(sh ci/build-plasmoid.sh)" >> "$GITHUB_OUTPUT"
+        run: |
+          files=$(sh ci/build-release.sh)
+          echo "${files}"
+          {
+            echo "plasmoid=$(echo "${files}" | sed -n 1p)"
+            echo "tarball=$(echo "${files}" | sed -n 2p)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
-          gh release create "${GITHUB_REF_NAME}" "${{ steps.build.outputs.file }}"
+          gh release create "${GITHUB_REF_NAME}"
+          "${{ steps.build.outputs.plasmoid }}" "${{ steps.build.outputs.tarball }}"
           --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag

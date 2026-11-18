@@ -1,8 +1,9 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Packs the widget into dist/rssreader-<version>.plasmoid, the file that goes
-# to the KDE Store. Only what the widget needs at runtime is included.
+# Packs the widget into dist/SimpleRSSFeed-<version with dashes>.plasmoid
+# (for example SimpleRSSFeed-1-261118-0.plasmoid), the file that goes to the
+# KDE Store. Only what the widget needs at runtime is included.
 #
 # Usage:  sh ci/build-plasmoid.sh
 # Needs:  python3, zip
@@ -12,7 +13,7 @@ PKG="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PKG"
 
 version=$(python3 -c 'import json; print(json.load(open("metadata.json"))["KPlugin"]["Version"])')
-out="dist/rssreader-${version}.plasmoid"
+out="dist/SimpleRSSFeed-$(echo "$version" | tr . -).plasmoid"
 
 files="metadata.json contents"
 [ -f icon.png ] && files="$files icon.png"
