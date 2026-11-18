@@ -52,6 +52,7 @@ ok(f'id {k.get("Id")}, version {k.get("Version")}')
 
 # --- package layout ---------------------------------------------------------
 for rel in ("contents/ui/main.qml",
+            "contents/ui/feedparser.js",
             "contents/ui/configGeneral.qml",
             "contents/config/main.xml",
             "contents/config/config.qml",

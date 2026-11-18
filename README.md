@@ -113,6 +113,7 @@ locally too:
 
 ```sh
 python3 ci/check-package.py      # metadata, layout, icon
+python3 ci/test-parser.py        # feed parser cases (needs pyside6-essentials 6.12)
 sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
 sh ci/build-plasmoid.sh          # writes dist/SimpleRSSFeed-<version with dashes>.plasmoid
 reuse lint                       # licence headers (pipx run reuse lint)
@@ -143,7 +144,7 @@ upload them to the [KDE Store](https://store.kde.org/p/2363221).
 
 ```
 metadata.json          Widget metadata (id, version, name/description translations)
-contents/ui/           QML: main.qml (widget), configGeneral.qml (settings page)
+contents/ui/           QML: main.qml (widget), feedparser.js (feed parsing), configGeneral.qml (settings page)
 contents/config/       Configuration schema and settings pages
 contents/icons/        Widget icon
 docs/                  Decisions, roadmap, architecture, glossary, threat model, third-party list
