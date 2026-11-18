@@ -8,7 +8,7 @@ A Plasma 6 KPackage (`Plasma/Applet`) of plain QML. `main.qml` reads the instanc
 ## Components
 | Component | Responsibility | Depends on |
 |---|---|---|
-| `metadata.json` | id, name, version (`1.YYMMDD.N`, D-011), licence, icon, translated name and description | — |
+| `metadata.json` | id, name, version (`1.YYMMDD.N`, D-012), licence, icon, translated name and description | — |
 | `contents/ui/main.qml` | compact and full views, feed loading with a 15 s timeout per feed, parsing, filter, blacklist, list | QtQuick, Layouts, Controls, Kirigami, Plasma components, plasmoid, QtCore |
 | `contents/ui/configGeneral.qml` | settings page (title, interval, sources, blacklist) | QtQuick, Controls, Layouts, Kirigami |
 | `contents/config/main.xml`, `config.qml` | settings schema and settings pages | KConfigXT |

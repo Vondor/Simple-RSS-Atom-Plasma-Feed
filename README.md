@@ -122,7 +122,7 @@ reuse lint                       # licence headers (pipx run reuse lint)
 
 Versions are numbered `1.YYMMDD.N`: the release date (UTC), then a counter
 from 0 for a further release on the same day, for example `1.261118.0`
-(D-011). They always go up, so the KDE Store and Plasma see every release
+(D-012). They always go up, so the KDE Store and Plasma see every release
 as newer than 1.6.1.
 
 To publish a release:

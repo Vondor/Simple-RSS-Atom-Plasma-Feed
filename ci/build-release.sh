@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Builds the two files a release uploads to the KDE Store (D-011):
+# Builds the two files a release uploads to the KDE Store (D-012):
 #   dist/SimpleRSSFeed-<version with dashes>.plasmoid   the widget
 #   dist/SimpleRSSFeed-<version with dashes>.tar.gz     the source of HEAD
 # for example SimpleRSSFeed-1-261118-0.plasmoid and .tar.gz for 1.261118.0.

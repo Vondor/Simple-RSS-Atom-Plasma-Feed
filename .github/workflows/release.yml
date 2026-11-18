@@ -4,7 +4,7 @@ name: Release
 # the KDE Store and attach them to a GitHub release:
 #   SimpleRSSFeed-1-261118-0.plasmoid  and  SimpleRSSFeed-1-261118-0.tar.gz
 # The tag must match "Version" in metadata.json, and Version must follow the
-# numbering 1.YYMMDD.N (D-011; ci/next-version.sh prints the next one).
+# numbering 1.YYMMDD.N (D-012; ci/next-version.sh prints the next one).
 on:
   push:
     tags: ["v*"]
@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           if ! echo "${version}" | grep -Eq '^1\.[0-9]{6}\.(0|[1-9][0-9]*)$'; then
-            echo "::error::Version ${version} is not 1.YYMMDD.N (D-011); run sh ci/next-version.sh"
+            echo "::error::Version ${version} is not 1.YYMMDD.N (D-012); run sh ci/next-version.sh"
             exit 1
           fi
 
