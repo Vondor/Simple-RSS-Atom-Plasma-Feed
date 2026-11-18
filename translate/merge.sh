@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Extracts all i18n() strings from the widget into template.pot,
 # then merges any new/changed strings into every existing *.po file.
 # Plasma 6 version: reads metadata.json instead of metadata.desktop.

@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Installs a stock Plasma desktop from the distribution's own repositories,
 # then checks that the widget works on it without any extra package.
 # Meant to run as root inside a fresh debian/ubuntu/fedora container, the CI

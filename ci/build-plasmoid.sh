@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Packs the widget into dist/rssreader-<version>.plasmoid, the file that goes
 # to the KDE Store. Only what the widget needs at runtime is included.
 #

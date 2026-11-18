@@ -2,6 +2,31 @@ version = 1
 SPDX-PackageName = "Simple RSS / Atom Plasma Feed"
 SPDX-PackageDownloadLocation = "https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed"
 
+# Source files (QML, XML, scripts) carry their own SPDX header (AGENTS.md 7.9).
+# The entries below cover files that cannot carry one: JSON, generated
+# translations, images, docs and small configuration files.
+
+# Widget data and generated files: metadata.json is JSON without comments; the
+# .mo, .po, .pot and metadata-strings.h files are rewritten by translate/*.sh.
+[[annotations]]
+path = [
+    "metadata.json",
+    "contents/locale/**",
+    "contents/icons/rssreader.svg",
+    "contents/screenshot.png",
+    "translate/*.po",
+    "translate/template.pot",
+    "translate/metadata-strings.h",
+]
+SPDX-FileCopyrightText = "2026 Fabian Drywa <dev@serpentsoftware.de>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Docs and configuration, under the code's licence (docs/DECISIONS.md, D-010).
+[[annotations]]
+path = ["**.md", ".github/**", ".gitignore", "REUSE.toml", "docs/*.md"]
+SPDX-FileCopyrightText = "2026 Fabian Drywa <dev@serpentsoftware.de>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
 # The publisher's logo (SerpentSoftware, the maintainer's publisher name). It
 # is a brand mark, not the widget icon, and outside the project's GPL: it may
 # be copied unmodified with the project and shown to name the publisher. The

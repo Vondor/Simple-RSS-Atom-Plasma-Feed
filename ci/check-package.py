@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Static checks for the plasmoid package. Needs only Python 3.
 
 Checks metadata.json, the package layout and the icon setup that makes the
