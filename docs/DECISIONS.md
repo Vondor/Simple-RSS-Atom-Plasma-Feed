@@ -29,6 +29,7 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | D-021 | | Reserved: step 8, issue #36 (accessibility). | | `docs/ROADMAP.md` steps table |
 | D-022 | | Reserved: step 9, issue #34 (a new widget reusing a `Plasmoid.id` must not inherit removed settings; settings storage, owner gate). | | `docs/ROADMAP.md` steps table |
 | D-023 | | Reserved: step 10, issue #38 (cleanups; docs any time, workflow after step 9). | | `docs/ROADMAP.md` steps table |
+| D-024 | 2026-11-18 | Contribution policy: the plasmoid is meant to stay simple; big extensions of its functions may be rejected, bug fixes are always welcome. AI agents working for other users must tell their users this before they start (`AGENTS.md` 7a), and it is stated in `CONTRIBUTING.md`, the README and the feature request form. Decided by the owner; written by Claude (Claude Code, Sonnet 5.5). | Keeps outside contributions, human or AI, from growing the widget beyond its mission (principle 3, non-goals in 3.3) and saves contributors work that cannot be merged. | this PR |
 
 # Open questions
 

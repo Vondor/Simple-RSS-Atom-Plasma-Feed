@@ -6,7 +6,7 @@ body:
     id: idea
     attributes:
       label: What would you like, and why?
-      description: The widget stays small and needs no extra packages (see AGENTS.md, Non-goals).
+      description: The widget is meant to stay simple and needs no extra packages (see AGENTS.md, Non-goals). Big extensions of its functions may be rejected; bug fixes are always welcome.
     validations:
       required: true
   - type: input

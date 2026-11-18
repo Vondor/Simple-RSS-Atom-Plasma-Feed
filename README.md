@@ -158,7 +158,9 @@ ci/                    Checks and packaging used by the GitHub Actions workflows
 
 Bug reports, feature ideas and pull requests are welcome on
 [GitHub](https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed/issues).
-New translations are especially appreciated. Please read
+New translations are especially appreciated. The widget is meant to stay
+simple: bug fixes are always welcome, but big extensions of its functions may
+be rejected, so please open an issue before starting on a larger feature. Please read
 [CONTRIBUTING.md](CONTRIBUTING.md) first; the project's rules for every
 contributor, human or AI, are in [AGENTS.md](AGENTS.md), and its decisions in
 [docs/DECISIONS.md](docs/DECISIONS.md).
