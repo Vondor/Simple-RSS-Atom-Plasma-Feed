@@ -180,7 +180,7 @@ PlasmoidItem {
 
             QQC2.TextField {
                 id: searchInput
-                placeholderText: i18n("Regex Filter Articles...")
+                placeholderText: i18n("Search articles…")
                 Layout.fillWidth: true
                 text: root.searchQuery
                 onTextChanged: {
@@ -304,7 +304,7 @@ PlasmoidItem {
                 PlasmaComponents.Label {
                     anchors.centerIn: parent
                     width: parent.width * 0.8
-                    text: root.searchQuery !== "" ? i18n("No articles match your filter.") : i18n("No articles to show. Check your feed sources or your connection.")
+                    text: root.searchQuery !== "" ? i18n("No articles match your search.") : i18n("No articles to show. Check your feed sources or your connection.")
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                     opacity: 0.5

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:37+0000\n"
+"POT-Creation-Date: 2026-11-18 10:53+0000\n"
 "PO-Revision-Date: 2026-07-23 13:15+0000\n"
 "Last-Translator: Fabian Drywa <dev@serpentsoftware.de>\n"
 "Language-Team: German\n"
@@ -22,12 +22,12 @@ msgid "General"
 msgstr "Allgemein"
 
 #: contents/ui/configGeneral.qml
-msgid "Plasmoid Title:"
-msgstr "Titel des Plasmoids:"
+msgid "Widget Title:"
+msgstr "Widget-Titel:"
 
 #: contents/ui/configGeneral.qml
-msgid "Leave empty to auto-collapse space..."
-msgstr "Leer lassen um den Platz einzuklappen …"
+msgid "Leave empty to show no title"
+msgstr "Leer lassen, um keinen Titel anzuzeigen"
 
 #: contents/ui/configGeneral.qml
 msgid "Refresh Interval:"
@@ -35,7 +35,7 @@ msgstr "Aktualisierungsintervall:"
 
 #: contents/ui/configGeneral.qml
 msgid "RSS Feed Sources:"
-msgstr "RSS Feed Quellen:"
+msgstr "RSS-Feed-Quellen:"
 
 #: contents/ui/configGeneral.qml
 msgid "Remove Source"
@@ -46,36 +46,48 @@ msgid "No feeds configured yet."
 msgstr "Noch keine Feeds eingerichtet."
 
 #: contents/ui/configGeneral.qml
-msgid "Add feed URL..."
-msgstr "Feed Adresse hinzufügen …"
+msgid "Paste a feed address…"
+msgstr "Feed-Adresse einfügen …"
 
 #: contents/ui/configGeneral.qml
 msgid "Add"
 msgstr "Hinzufügen"
 
 #: contents/ui/configGeneral.qml
-msgid "Blacklist (Regex):"
-msgstr "Sperrliste (Regex):"
+msgid "This feed is already in the list."
+msgstr "Dieser Feed ist schon in der Liste."
+
+#: contents/ui/configGeneral.qml
+msgid "This is not a web address. A feed address looks like https://example.org/feed."
+msgstr "Das ist keine Internetadresse. Eine Feed-Adresse sieht so aus: https://example.org/feed."
+
+#: contents/ui/configGeneral.qml
+msgid "Hide Articles Matching:"
+msgstr "Artikel ausblenden mit:"
 
 #: contents/ui/configGeneral.qml
 msgid "Remove Pattern"
 msgstr "Muster entfernen"
 
 #: contents/ui/configGeneral.qml
-msgid "No exclusion patterns configured."
-msgstr "Keine Ausschlussmuster eingerichtet."
+msgid "No articles are hidden."
+msgstr "Es werden keine Artikel ausgeblendet."
 
 #: contents/ui/configGeneral.qml
-msgid "Add block expression..."
-msgstr "Sperrausdruck hinzufügen …"
+msgid "Add a word…"
+msgstr "Wort hinzufügen …"
+
+#: contents/ui/configGeneral.qml
+msgid "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
+msgstr "Artikel, deren Titel oder Quelle eines dieser Wörter enthält, werden ausgeblendet. Groß- und Kleinschreibung spielt keine Rolle. Reguläre Ausdrücke funktionieren auch."
 
 #: contents/ui/main.qml
 msgid "Never"
 msgstr "Nie"
 
 #: contents/ui/main.qml
-msgid "Regex Filter Articles..."
-msgstr "Artikel via Regex filtern..."
+msgid "Search articles…"
+msgstr "Artikel suchen …"
 
 #: contents/ui/main.qml
 msgid "Last Updated: %1"
@@ -100,8 +112,8 @@ msgstr[0] "%1 von %2 Feeds konnte nicht geladen werden."
 msgstr[1] "%1 von %2 Feeds konnten nicht geladen werden."
 
 #: contents/ui/main.qml
-msgid "No articles match your filter."
-msgstr "Keine Artikel entsprechen dem Filter."
+msgid "No articles match your search."
+msgstr "Keine Artikel passen zu deiner Suche."
 
 #: contents/ui/main.qml
 msgid "No articles to show. Check your feed sources or your connection."
@@ -149,7 +161,31 @@ msgstr "RSS Feed Plasmoid"
 #: translate/metadata-strings.h
 msgctxt "@info widget description"
 msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
-msgstr "Ein schlanker RSS-Feed-Reader, erstellt mit Gemini AI,  gepatched mit Claude AI und Designed mit Menschenhand genauso wie jener Übersetzung."
+msgstr "Ein schlanker RSS-Feed-Reader, erstellt mit Gemini AI, angepasst mit Claude AI, gestaltet und übersetzt von Menschenhand."
+
+#~ msgid "Plasmoid Title:"
+#~ msgstr "Titel des Plasmoids:"
+
+#~ msgid "Leave empty to auto-collapse space..."
+#~ msgstr "Leer lassen um den Platz einzuklappen …"
+
+#~ msgid "Add feed URL..."
+#~ msgstr "Feed Adresse hinzufügen …"
+
+#~ msgid "Blacklist (Regex):"
+#~ msgstr "Sperrliste (Regex):"
+
+#~ msgid "No exclusion patterns configured."
+#~ msgstr "Keine Ausschlussmuster eingerichtet."
+
+#~ msgid "Add block expression..."
+#~ msgstr "Sperrausdruck hinzufügen …"
+
+#~ msgid "Regex Filter Articles..."
+#~ msgstr "Artikel via Regex filtern..."
+
+#~ msgid "No articles match your filter."
+#~ msgstr "Keine Artikel entsprechen dem Filter."
 
 #~ msgctxt "@info widget description"
 #~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."

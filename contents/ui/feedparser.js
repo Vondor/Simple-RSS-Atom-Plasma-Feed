@@ -422,22 +422,59 @@ function combineResults(urls, results, previous) {
     };
 }
 
-// The articles matching the search box: a case-insensitive regular expression
-// on title or source. An empty query matches all; an invalid one matches none.
+// The articles matching the search box: plain text, not case-sensitive, found
+// anywhere in the title or source (D-020). An empty query matches all. Typed
+// text is never read as a regular expression, so "C++" or "what?" find
+// exactly what was typed.
 function filterArticles(articles, query) {
-    var q = (query || "").trim();
+    var q = (query || "").trim().toLowerCase();
     if (q === "")
         return articles.slice();
-    var regex;
-    try {
-        regex = new RegExp(q, "i");
-    } catch (e) {
-        return [];
-    }
     var result = [];
     for (var j = 0; j < articles.length; j++) {
-        if (regex.test(articles[j].title) || regex.test(articles[j].source))
+        var title = String(articles[j].title || "").toLowerCase();
+        var source = String(articles[j].source || "").toLowerCase();
+        if (title.indexOf(q) !== -1 || source.indexOf(q) !== -1)
             result.push(articles[j]);
     }
     return result;
+}
+
+// The address to store for what the user typed as a feed address, or "" when
+// it is not a web address (D-020). Without a scheme, https:// is put in front
+// ("kde.org/feed"), and then the host needs a dot, so a half-typed "kde" is
+// not taken; only http and https are accepted; the host may not hold spaces,
+// "@" or ":" (apart from a port number).
+function normalizeFeedUrl(text) {
+    var t = String(text || "").trim();
+    if (t === "")
+        return "";
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(t)) {
+        if (!/^[^\/?#]*\./.test(t))
+            return "";
+        t = "https://" + t;
+    }
+    if (!/^https?:\/\/([^\s\/?#:@\[\]]+|\[[0-9A-Fa-f:.]+\])(:[0-9]{1,5})?([\/?#]\S*)?$/i.test(t))
+        return "";
+    return t;
+}
+
+// Whether text is a valid case-insensitive regular expression.
+function isValidPattern(text) {
+    try {
+        new RegExp(text, "i");
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// The blacklist entry to store for what the user typed (D-020): a valid
+// regular expression as it is, anything else (such as "C++") turned into one
+// that matches the typed text literally. Stored entries keep their meaning.
+function blacklistPattern(text) {
+    var t = String(text || "").trim();
+    if (t === "" || isValidPattern(t))
+        return t;
+    return t.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&");
 }

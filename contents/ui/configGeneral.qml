@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "feedparser.js" as FeedParser
 
 Item {
     id: page
@@ -36,6 +37,23 @@ Item {
     property int feedsListStretch: 2
     property int regexListStretch: 1
 
+    // False until the stored lists have been read into the models, so that
+    // writing cfg_* below (which includes typed but not yet added text) never
+    // reads them back in as list entries.
+    property bool feedsLoaded: false
+    property bool regexLoaded: false
+
+    // What the two input fields would add: a feed address with https:// put
+    // in front when missing ("" when it is not a web address), and a
+    // blacklist entry (typed text that is not a valid pattern is matched
+    // literally). Both come from feedparser.js and are tested there (D-020).
+    readonly property string pendingFeedUrl: FeedParser.normalizeFeedUrl(newFeedInput.text)
+    readonly property bool pendingFeedDuplicate: pendingFeedUrl !== "" && hasFeed(pendingFeedUrl)
+    readonly property string pendingRegex: FeedParser.blacklistPattern(newRegexInput.text)
+    // Set when the user leaves the feed field or presses Enter or "Add" with
+    // text that is not a web address, so the hint does not flash while typing.
+    property bool showFeedProblem: false
+
     ListModel {
         id: feedsModel
     }
@@ -47,7 +65,8 @@ Item {
     // Accepts plain JSON array only — the SQLite layer in main.qml owns the
     // canonical data; Plasmoid.configuration is just a staging area for the dialog.
     onCfg_sourcesJsonChanged: {
-        if (feedsModel.count === 0 && cfg_sourcesJson) {
+        if (!page.feedsLoaded && cfg_sourcesJson) {
+            page.feedsLoaded = true;
             try {
                 var parsed = JSON.parse(cfg_sourcesJson);
                 var urls = Array.isArray(parsed) ? parsed : [];
@@ -62,7 +81,8 @@ Item {
     }
 
     onCfg_excludeRegexJsonChanged: {
-        if (regexModel.count === 0 && cfg_excludeRegexJson) {
+        if (!page.regexLoaded && cfg_excludeRegexJson) {
+            page.regexLoaded = true;
             try {
                 var rules = JSON.parse(cfg_excludeRegexJson);
                 if (Array.isArray(rules)) {
@@ -81,10 +101,29 @@ Item {
     // saves them to SQLite under this instance's Plasmoid.id, and refreshes feeds.
     // NOTE: Plasmoid is intentionally NOT referenced here — it is not available
     //       in config pages in Plasma 6.
+    //
+    // A valid address or pattern that is typed but not yet added counts as
+    // added (issue #35): pressing OK or Apply without "Add" keeps it, and
+    // typing it marks the page as changed. The field keeps the text until
+    // "Add" is pressed.
+    function hasFeed(url) {
+        for (var i = 0; i < feedsModel.count; i++) {
+            if (feedsModel.get(i).url === url)
+                return true;
+        }
+        return false;
+    }
+
     function updateFeedsConfig() {
         var urls = [];
         for (var i = 0; i < feedsModel.count; i++)
             urls.push(feedsModel.get(i).url);
+        // Computed from the field here rather than read from pendingFeedUrl,
+        // which may not be updated yet when onTextChanged calls this.
+        var pending = FeedParser.normalizeFeedUrl(newFeedInput.text);
+        if (pending !== "" && urls.indexOf(pending) === -1)
+            urls.push(pending);
+        page.feedsLoaded = true;
         cfg_sourcesJson = JSON.stringify(urls);
     }
 
@@ -92,7 +131,40 @@ Item {
         var rules = [];
         for (var i = 0; i < regexModel.count; i++)
             rules.push(regexModel.get(i).pattern);
+        var pending = FeedParser.blacklistPattern(newRegexInput.text);
+        if (pending !== "" && rules.indexOf(pending) === -1)
+            rules.push(pending);
+        page.regexLoaded = true;
         cfg_excludeRegexJson = JSON.stringify(rules);
+    }
+
+    function addFeed() {
+        if (pendingFeedUrl === "") {
+            showFeedProblem = newFeedInput.text.trim() !== "";
+            return;
+        }
+        if (!hasFeed(pendingFeedUrl))
+            feedsModel.append({
+                "url": pendingFeedUrl
+            });
+        newFeedInput.text = "";
+        updateFeedsConfig();
+    }
+
+    function addRegex() {
+        if (pendingRegex === "")
+            return;
+        var known = false;
+        for (var i = 0; i < regexModel.count; i++) {
+            if (regexModel.get(i).pattern === pendingRegex)
+                known = true;
+        }
+        if (!known)
+            regexModel.append({
+                "pattern": pendingRegex
+            });
+        newRegexInput.text = "";
+        updateRegexConfig();
     }
 
     // Fixed 5px inset on all four sides. The ColumnLayout — unlike the
@@ -110,13 +182,13 @@ Item {
 
             QQC2.Label {
                 id: titleFieldLabel
-                text: i18n("Plasmoid Title:")
+                text: i18n("Widget Title:")
                 Layout.minimumWidth: page.formLabelWidth
                 Layout.preferredWidth: page.formLabelWidth
             }
             QQC2.TextField {
                 id: titleField
-                placeholderText: i18n("Leave empty to auto-collapse space...")
+                placeholderText: i18n("Leave empty to show no title")
                 Layout.fillWidth: true
             }
         }
@@ -239,23 +311,29 @@ Item {
                     QQC2.TextField {
                         id: newFeedInput
                         Layout.fillWidth: true
-                        placeholderText: i18n("Add feed URL...")
-                        onAccepted: addFeedButton.clicked()
+                        placeholderText: i18n("Paste a feed address…")
+                        onTextChanged: {
+                            page.showFeedProblem = false;
+                            page.updateFeedsConfig();
+                        }
+                        onEditingFinished: page.showFeedProblem = text.trim() !== "" && page.pendingFeedUrl === ""
+                        onAccepted: page.addFeed()
                     }
                     QQC2.Button {
                         id: addFeedButton
                         icon.name: "list-add"
                         text: i18n("Add")
-                        onClicked: {
-                            if (newFeedInput.text.trim() !== "") {
-                                feedsModel.append({
-                                    "url": newFeedInput.text.trim()
-                                });
-                                newFeedInput.text = "";
-                                page.updateFeedsConfig();
-                            }
-                        }
+                        enabled: newFeedInput.text.trim() !== ""
+                        onClicked: page.addFeed()
                     }
+                }
+
+                QQC2.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.Wrap
+                    color: Kirigami.Theme.negativeTextColor
+                    visible: page.pendingFeedDuplicate || (page.showFeedProblem && page.pendingFeedUrl === "")
+                    text: page.pendingFeedDuplicate ? i18n("This feed is already in the list.") : i18n("This is not a web address. A feed address looks like https://example.org/feed.")
                 }
             }
         }
@@ -264,7 +342,7 @@ Item {
             Layout.fillWidth: true
         }
 
-        // --- Blacklist (Regex) -----------------------------------------
+        // --- Hide articles matching (blacklist) ------------------------
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -274,7 +352,7 @@ Item {
 
             QQC2.Label {
                 id: regexSourcesLabel
-                text: i18n("Blacklist (Regex):")
+                text: i18n("Hide Articles Matching:")
                 Layout.minimumWidth: page.formLabelWidth
                 Layout.preferredWidth: page.formLabelWidth
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -335,7 +413,7 @@ Item {
 
                             QQC2.Label {
                                 anchors.centerIn: parent
-                                text: i18n("No exclusion patterns configured.")
+                                text: i18n("No articles are hidden.")
                                 opacity: 0.4
                                 font.italic: true
                                 visible: regexModel.count === 0
@@ -351,23 +429,25 @@ Item {
                     QQC2.TextField {
                         id: newRegexInput
                         Layout.fillWidth: true
-                        placeholderText: i18n("Add block expression...")
-                        onAccepted: addRegexButton.clicked()
+                        placeholderText: i18n("Add a word…")
+                        onTextChanged: page.updateRegexConfig()
+                        onAccepted: page.addRegex()
                     }
                     QQC2.Button {
                         id: addRegexButton
                         icon.name: "list-add"
                         text: i18n("Add")
-                        onClicked: {
-                            if (newRegexInput.text.trim() !== "") {
-                                regexModel.append({
-                                    "pattern": newRegexInput.text.trim()
-                                });
-                                newRegexInput.text = "";
-                                page.updateRegexConfig();
-                            }
-                        }
+                        enabled: newRegexInput.text.trim() !== ""
+                        onClicked: page.addRegex()
                     }
+                }
+
+                QQC2.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.Wrap
+                    font: Kirigami.Theme.smallFont
+                    opacity: 0.7
+                    text: i18n("Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too.")
                 }
             }
         }

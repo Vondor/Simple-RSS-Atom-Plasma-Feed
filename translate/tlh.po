@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:37+0000\n"
+"POT-Creation-Date: 2026-11-18 10:53+0000\n"
 "PO-Revision-Date: 2026-07-23 18:11+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Klingon <https://www.kli.org/>\n"
@@ -25,12 +25,12 @@ msgid "General"
 msgstr "motlh"
 
 #: contents/ui/configGeneral.qml
-msgid "Plasmoid Title:"
+msgid "Widget Title:"
 msgstr "Doch pong:"
 
 #: contents/ui/configGeneral.qml
-msgid "Leave empty to auto-collapse space..."
-msgstr "chIm chugh, Daq teqlu'…"
+msgid "Leave empty to show no title"
+msgstr "pong DaneHbe'chugh, yImoHaq"
 
 #: contents/ui/configGeneral.qml
 msgid "Refresh Interval:"
@@ -49,36 +49,48 @@ msgid "No feeds configured yet."
 msgstr "jabbI'ID tu'lu'be'."
 
 #: contents/ui/configGeneral.qml
-msgid "Add feed URL..."
-msgstr "jabbI'ID Daq yIchel…"
+msgid "Paste a feed address…"
+msgstr "jabbI'ID Daq yIlan…"
 
 #: contents/ui/configGeneral.qml
 msgid "Add"
 msgstr "yIchel"
 
 #: contents/ui/configGeneral.qml
-msgid "Blacklist (Regex):"
-msgstr "tetlh qIj (mu' pat):"
+msgid "This feed is already in the list."
+msgstr "tetlhDaq mungvam tu'lu'pu'."
+
+#: contents/ui/configGeneral.qml
+msgid "This is not a web address. A feed address looks like https://example.org/feed."
+msgstr "De'wI' Daq ghaHbe'. jabbI'ID Daq rur https://example.org/feed."
+
+#: contents/ui/configGeneral.qml
+msgid "Hide Articles Matching:"
+msgstr "ghItlhmey So'meH mu'mey:"
 
 #: contents/ui/configGeneral.qml
 msgid "Remove Pattern"
 msgstr "mu' pat yIteq"
 
 #: contents/ui/configGeneral.qml
-msgid "No exclusion patterns configured."
-msgstr "mu' pat tu'lu'be'."
+msgid "No articles are hidden."
+msgstr "ghItlh So'lu'be'."
 
 #: contents/ui/configGeneral.qml
-msgid "Add block expression..."
-msgstr "botmeH mu'tlhegh yIchel…"
+msgid "Add a word…"
+msgstr "mu' yIchel…"
+
+#: contents/ui/configGeneral.qml
+msgid "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
+msgstr "ghItlh pong mung ghap mu'vammey ngaSchugh, ghItlh So'lu'. mu' pat lo'laH je."
 
 #: contents/ui/main.qml
 msgid "Never"
 msgstr "not"
 
 #: contents/ui/main.qml
-msgid "Regex Filter Articles..."
-msgstr "ghItlhmey yIwIv…"
+msgid "Search articles…"
+msgstr "ghItlhmey yInej…"
 
 #: contents/ui/main.qml
 msgid "Last Updated: %1"
@@ -102,8 +114,8 @@ msgid_plural "%1 of %2 feeds could not be loaded."
 msgstr[0] "%2 mungmey: %1 lI'laHbe'lu'."
 
 #: contents/ui/main.qml
-msgid "No articles match your filter."
-msgstr "ghItlh rap tu'lu'be'."
+msgid "No articles match your search."
+msgstr "ghItlh DanejtaH tu'lu'be'."
 
 #: contents/ui/main.qml
 msgid "No articles to show. Check your feed sources or your connection."
@@ -152,6 +164,30 @@ msgstr "RSS laDwI'"
 msgctxt "@info widget description"
 msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
 msgstr "RSS jabbI'ID laDwI' ngeD. Gemini AI lo'lu'taHvIS chenmoHlu'; Claude AI lo'lu'taHvIS choHlu'; tera'ngan nab; tera'ngan mughpu' je."
+
+#~ msgid "Plasmoid Title:"
+#~ msgstr "Doch pong:"
+
+#~ msgid "Leave empty to auto-collapse space..."
+#~ msgstr "chIm chugh, Daq teqlu'…"
+
+#~ msgid "Add feed URL..."
+#~ msgstr "jabbI'ID Daq yIchel…"
+
+#~ msgid "Blacklist (Regex):"
+#~ msgstr "tetlh qIj (mu' pat):"
+
+#~ msgid "No exclusion patterns configured."
+#~ msgstr "mu' pat tu'lu'be'."
+
+#~ msgid "Add block expression..."
+#~ msgstr "botmeH mu'tlhegh yIchel…"
+
+#~ msgid "Regex Filter Articles..."
+#~ msgstr "ghItlhmey yIwIv…"
+
+#~ msgid "No articles match your filter."
+#~ msgstr "ghItlh rap tu'lu'be'."
 
 #~ msgctxt "@info widget description"
 #~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."

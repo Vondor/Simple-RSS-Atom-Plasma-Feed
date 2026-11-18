@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:37+0000\n"
+"POT-Creation-Date: 2026-11-18 10:53+0000\n"
 "PO-Revision-Date: 2026-07-23 18:15+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Quenya <https://eldamo.org/>\n"
@@ -26,12 +26,12 @@ msgid "General"
 msgstr "Héra"
 
 #: contents/ui/configGeneral.qml
-msgid "Plasmoid Title:"
+msgid "Widget Title:"
 msgstr "Carmo essë:"
 
 #: contents/ui/configGeneral.qml
-msgid "Leave empty to auto-collapse space..."
-msgstr "Lá quanta ná, nómë hehtaina nauva…"
+msgid "Leave empty to show no title"
+msgstr "Á lav lusta, ar essë ua tanina"
 
 #: contents/ui/configGeneral.qml
 msgid "Refresh Interval:"
@@ -50,36 +50,48 @@ msgid "No feeds configured yet."
 msgstr "Lá ëar ehteli."
 
 #: contents/ui/configGeneral.qml
-msgid "Add feed URL..."
-msgstr "Á napanë ehtelëo nómë…"
+msgid "Paste a feed address…"
+msgstr "Á panya ehtelëo tengwa…"
 
 #: contents/ui/configGeneral.qml
 msgid "Add"
 msgstr "Á napanë"
 
 #: contents/ui/configGeneral.qml
-msgid "Blacklist (Regex):"
-msgstr "Hehtainë quettar (Regex):"
+msgid "This feed is already in the list."
+msgstr "Ehtelë sina ëa yando i combessë."
+
+#: contents/ui/configGeneral.qml
+msgid "This is not a web address. A feed address looks like https://example.org/feed."
+msgstr "Si ua tengwa natsessë. Ehtelëo tengwa ná ve https://example.org/feed."
+
+#: contents/ui/configGeneral.qml
+msgid "Hide Articles Matching:"
+msgstr "Á nurta sinyar arwa:"
 
 #: contents/ui/configGeneral.qml
 msgid "Remove Pattern"
 msgstr "Á hehta tengwë"
 
 #: contents/ui/configGeneral.qml
-msgid "No exclusion patterns configured."
-msgstr "Lá ëar tengwi."
+msgid "No articles are hidden."
+msgstr "Ua ëar nurtainë sinyar."
 
 #: contents/ui/configGeneral.qml
-msgid "Add block expression..."
-msgstr "Á napanë hehtaina quetta…"
+msgid "Add a word…"
+msgstr "Á napanë quetta…"
+
+#: contents/ui/configGeneral.qml
+msgid "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
+msgstr "Sinyar yaiva essë hya ehtelë samë quetta sine nar nurtainë. Tengwi alte hya pityë ua valir. Tengwi Regex mahtar yando."
 
 #: contents/ui/main.qml
 msgid "Never"
 msgstr "Ullumë"
 
 #: contents/ui/main.qml
-msgid "Regex Filter Articles..."
-msgstr "Á cilë sinyar…"
+msgid "Search articles…"
+msgstr "Á cesta sinyar…"
 
 #: contents/ui/main.qml
 msgid "Last Updated: %1"
@@ -104,8 +116,8 @@ msgstr[0] "%1 ho %2 ehteli ua polë cólienna."
 msgstr[1] "%1 ho %2 ehteler uar polir cólienna."
 
 #: contents/ui/main.qml
-msgid "No articles match your filter."
-msgstr "Lá ëar sinyar ve cilmelya."
+msgid "No articles match your search."
+msgstr "Lá ëar sinyar ve cestalya."
 
 #: contents/ui/main.qml
 msgid "No articles to show. Check your feed sources or your connection."
@@ -154,6 +166,30 @@ msgstr "RSS Cendalë"
 msgctxt "@info widget description"
 msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
 msgstr "RSS sinyaron cendalë, Atanen cantaina. Gemini AI carnë, Claude AI envinyatanë; i quettar Atanion nar."
+
+#~ msgid "Plasmoid Title:"
+#~ msgstr "Carmo essë:"
+
+#~ msgid "Leave empty to auto-collapse space..."
+#~ msgstr "Lá quanta ná, nómë hehtaina nauva…"
+
+#~ msgid "Add feed URL..."
+#~ msgstr "Á napanë ehtelëo nómë…"
+
+#~ msgid "Blacklist (Regex):"
+#~ msgstr "Hehtainë quettar (Regex):"
+
+#~ msgid "No exclusion patterns configured."
+#~ msgstr "Lá ëar tengwi."
+
+#~ msgid "Add block expression..."
+#~ msgstr "Á napanë hehtaina quetta…"
+
+#~ msgid "Regex Filter Articles..."
+#~ msgstr "Á cilë sinyar…"
+
+#~ msgid "No articles match your filter."
+#~ msgstr "Lá ëar sinyar ve cilmelya."
 
 #~ msgctxt "@info widget description"
 #~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."
