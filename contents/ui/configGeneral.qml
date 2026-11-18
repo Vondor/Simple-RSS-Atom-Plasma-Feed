@@ -27,12 +27,7 @@ Item {
     // Shared width for every row label: sized to whichever translated label
     // text is longest, so the label column lines up no matter the locale.
     // Re-evaluates automatically whenever any label's text/font changes.
-    property real formLabelWidth: Math.max(
-        titleFieldLabel.implicitWidth,
-        refreshTimeSpinBoxLabel.implicitWidth,
-        feedsSourcesLabel.implicitWidth,
-        regexSourcesLabel.implicitWidth
-    )
+    property real formLabelWidth: Math.max(titleFieldLabel.implicitWidth, refreshTimeSpinBoxLabel.implicitWidth, feedsSourcesLabel.implicitWidth, regexSourcesLabel.implicitWidth)
 
     // Relative height of the two list sections when the dialog has spare
     // vertical space. They're distributed in this ratio, so 2 : 1 means the
@@ -41,8 +36,12 @@ Item {
     property int feedsListStretch: 2
     property int regexListStretch: 1
 
-    ListModel { id: feedsModel }
-    ListModel { id: regexModel }
+    ListModel {
+        id: feedsModel
+    }
+    ListModel {
+        id: regexModel
+    }
 
     // Populate feeds list when cfg_sourcesJson is set on dialog open.
     // Accepts plain JSON array only — the SQLite layer in main.qml owns the
@@ -53,8 +52,12 @@ Item {
                 var parsed = JSON.parse(cfg_sourcesJson);
                 var urls = Array.isArray(parsed) ? parsed : [];
                 for (var i = 0; i < urls.length; i++)
-                    feedsModel.append({ "url": urls[i] });
-            } catch(e) { console.error("RSS configGeneral sourcesJson parse:", e); }
+                    feedsModel.append({
+                        "url": urls[i]
+                    });
+            } catch (e) {
+                console.error("RSS configGeneral sourcesJson parse:", e);
+            }
         }
     }
 
@@ -64,9 +67,13 @@ Item {
                 var rules = JSON.parse(cfg_excludeRegexJson);
                 if (Array.isArray(rules)) {
                     for (var i = 0; i < rules.length; i++)
-                        regexModel.append({ "pattern": rules[i] });
+                        regexModel.append({
+                            "pattern": rules[i]
+                        });
                 }
-            } catch(e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 
@@ -131,7 +138,9 @@ Item {
                 to: 1440
             }
             // Absorbs the remaining row width so the spin box stays compact.
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
         Kirigami.Separator {
@@ -239,7 +248,9 @@ Item {
                         text: i18n("Add")
                         onClicked: {
                             if (newFeedInput.text.trim() !== "") {
-                                feedsModel.append({ "url": newFeedInput.text.trim() });
+                                feedsModel.append({
+                                    "url": newFeedInput.text.trim()
+                                });
                                 newFeedInput.text = "";
                                 page.updateFeedsConfig();
                             }
@@ -349,7 +360,9 @@ Item {
                         text: i18n("Add")
                         onClicked: {
                             if (newRegexInput.text.trim() !== "") {
-                                regexModel.append({ "pattern": newRegexInput.text.trim() });
+                                regexModel.append({
+                                    "pattern": newRegexInput.text.trim()
+                                });
                                 newRegexInput.text = "";
                                 page.updateRegexConfig();
                             }

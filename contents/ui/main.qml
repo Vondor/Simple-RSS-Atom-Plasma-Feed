@@ -13,15 +13,15 @@ PlasmoidItem {
     id: root
 
     property string lastUpdatedText: i18n("Never")
-    property var allArticlesRaw: [] 
-    property string searchQuery: "" 
+    property var allArticlesRaw: []
+    property string searchQuery: ""
     property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
     property bool initializing: false  // blocks Connections writes during startup restore
-    
+
     property string currentTitle: {
         try {
             return Plasmoid.configuration.customTitle.trim();
-        } catch(e) {
+        } catch (e) {
             return "";
         }
     }
@@ -33,7 +33,9 @@ PlasmoidItem {
     switchWidth: 250
     switchHeight: 250
 
-    ListModel { id: articlesModel }
+    ListModel {
+        id: articlesModel
+    }
 
     // Reusable Timer component, instantiated per in-flight feed request as a
     // safety timeout. QML's XMLHttpRequest does not implement .timeout/.ontimeout
@@ -53,8 +55,8 @@ PlasmoidItem {
         interval: {
             try {
                 return Plasmoid.configuration.refreshTime * 60 * 1000;
-            } catch(e) {
-                return 900000; 
+            } catch (e) {
+                return 900000;
             }
         }
         running: true
@@ -79,13 +81,13 @@ PlasmoidItem {
         id: instanceSettings
         category: "SimpleRSSFeed_" + Plasmoid.id
 
-        property string sourcesJson:      "[]"
+        property string sourcesJson: "[]"
         property string excludeRegexJson: "[]"
-        property string customTitle:      ""
-        property int    refreshTime:      15
+        property string customTitle: ""
+        property int refreshTime: 15
         // Becomes true after the first successful seed so Component.onCompleted
         // knows to RESTORE from here rather than seed from Plasmoid.configuration.
-        property bool   seeded:           false
+        property bool seeded: false
     }
 
     Connections {
@@ -118,18 +120,21 @@ PlasmoidItem {
 
     // CUSTOM FORMATTERS FOR TIME, DATE, AND TIMEZONES
     function formatMyDateTime(date) {
-        if (!date || isNaN(date.getTime())) return "";
-        
+        if (!date || isNaN(date.getTime()))
+            return "";
+
         var day = ("0" + date.getDate()).slice(-2);
         var month = ("0" + (date.getMonth() + 1)).slice(-2);
         var year = ("0" + date.getFullYear()).slice(-2);
-        
+
         var hours = ("0" + date.getHours()).slice(-2);
         var minutes = ("0" + date.getMinutes()).slice(-2);
-        
+
         var tz = "";
         try {
-            var parts = new Intl.DateTimeFormat('en', { timeZoneName: 'short' }).formatToParts(date);
+            var parts = new Intl.DateTimeFormat('en', {
+                timeZoneName: 'short'
+            }).formatToParts(date);
             for (var i = 0; i < parts.length; i++) {
                 if (parts[i].type === 'timeZoneName') {
                     tz = parts[i].value;
@@ -138,21 +143,25 @@ PlasmoidItem {
             }
         } catch (e) {
             var match = date.toString().match(/\(([^)]+)\)$/);
-            if (match) tz = match[1];
+            if (match)
+                tz = match[1];
         }
-        
+
         return day + "." + month + "." + year + " " + hours + ":" + minutes + (tz ? " " + tz : "");
     }
 
     function formatMyTime(date) {
-        if (!date || isNaN(date.getTime())) return "";
-        
+        if (!date || isNaN(date.getTime()))
+            return "";
+
         var hours = ("0" + date.getHours()).slice(-2);
         var minutes = ("0" + date.getMinutes()).slice(-2);
-        
+
         var tz = "";
         try {
-            var parts = new Intl.DateTimeFormat('en', { timeZoneName: 'short' }).formatToParts(date);
+            var parts = new Intl.DateTimeFormat('en', {
+                timeZoneName: 'short'
+            }).formatToParts(date);
             for (var i = 0; i < parts.length; i++) {
                 if (parts[i].type === 'timeZoneName') {
                     tz = parts[i].value;
@@ -161,16 +170,17 @@ PlasmoidItem {
             }
         } catch (e) {
             var match = date.toString().match(/\(([^)]+)\)$/);
-            if (match) tz = match[1];
+            if (match)
+                tz = match[1];
         }
-        
+
         return hours + ":" + minutes + (tz ? " " + tz : "");
     }
 
     function filterArticles() {
         articlesModel.clear();
         var query = root.searchQuery.trim();
-        
+
         if (query === "") {
             for (var i = 0; i < allArticlesRaw.length; i++) {
                 articlesModel.append(allArticlesRaw[i]);
@@ -182,7 +192,7 @@ PlasmoidItem {
         try {
             regex = new RegExp(query, "i");
         } catch (e) {
-            return; 
+            return;
         }
 
         for (var j = 0; j < allArticlesRaw.length; j++) {
@@ -238,14 +248,14 @@ PlasmoidItem {
                 id: searchInput
                 placeholderText: i18n("Regex Filter Articles...")
                 Layout.fillWidth: true
-                text: root.searchQuery 
+                text: root.searchQuery
                 onTextChanged: {
                     if (root.searchQuery !== text) {
                         root.searchQuery = text;
                     }
                 }
                 rightPadding: clearButton.width
-                
+
                 QQC2.ToolButton {
                     id: clearButton
                     anchors.right: parent.right
@@ -283,20 +293,21 @@ PlasmoidItem {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            
+
             ListView {
                 id: listView
                 width: parent.width // FIXED: Explicit width constraint prevents horizontal layout collapse
                 model: articlesModel
                 spacing: Kirigami.Units.smallSpacing
                 boundsBehavior: Flickable.StopAtBounds
-                
+
                 delegate: PlasmaComponents.ItemDelegate {
                     id: delegateItem
                     width: listView.width
                     height: delegateColumn.implicitHeight + (Kirigami.Units.mediumSpacing * 2)
-                    onClicked: if (model.link) Qt.openUrlExternally(model.link)
-                    
+                    onClicked: if (model.link)
+                        Qt.openUrlExternally(model.link)
+
                     ColumnLayout {
                         id: delegateColumn
                         anchors.left: parent.left
@@ -335,12 +346,11 @@ PlasmoidItem {
         }
     }
 
-
     function fetchFeeds() {
         var jsonStr = "";
         try {
             jsonStr = Plasmoid.configuration.sourcesJson;
-        } catch(e) {
+        } catch (e) {
             lastUpdatedText = i18n("Config Access Error");
             return;
         }
@@ -354,22 +364,26 @@ PlasmoidItem {
 
         // Plasmoid.configuration was pre-populated from SQLite on startup, so this
         // is normally a plain JSON array. Legacy branches handle old-format installs.
-        var sources    = [];
+        var sources = [];
         var myExcludes = [];
         try {
             var parsed = JSON.parse(jsonStr);
             if (Array.isArray(parsed)) {
                 sources = parsed;
             } else if (parsed && typeof parsed === "object") {
-                if      (parsed.v === 1) sources = parsed.sources || [];
-                else if (parsed.v === 2) sources = ((parsed.instances || {})[String(Plasmoid.id)] || {}).sources || [];
+                if (parsed.v === 1)
+                    sources = parsed.sources || [];
+                else if (parsed.v === 2)
+                    sources = ((parsed.instances || {})[String(Plasmoid.id)] || {}).sources || [];
             }
-        } catch(e) {
+        } catch (e) {
             lastUpdatedText = i18n("JSON Parse Error");
             return;
         }
 
-        try { myExcludes = JSON.parse(Plasmoid.configuration.excludeRegexJson || "[]"); } catch(e) {}
+        try {
+            myExcludes = JSON.parse(Plasmoid.configuration.excludeRegexJson || "[]");
+        } catch (e) {}
 
         if (!Array.isArray(sources) || sources.length === 0) {
             lastUpdatedText = i18n("No sources configured");
@@ -385,7 +399,8 @@ PlasmoidItem {
 
         function checkCompletion() {
             // Drop execution if a newer update cycle has taken over
-            if (fetchId !== root.currentFetchId) return;
+            if (fetchId !== root.currentFetchId)
+                return;
 
             if (completedRequests === sources.length) {
                 // Excludes were already extracted from the v2 config above.
@@ -397,7 +412,7 @@ PlasmoidItem {
                         if (excludePatterns[k].trim() !== "") {
                             compiledExcludes.push(new RegExp(excludePatterns[k], "i"));
                         }
-                    } catch(err) {}
+                    } catch (err) {}
                 }
 
                 var allowedArticles = [];
@@ -429,15 +444,17 @@ PlasmoidItem {
                     }
                 }
 
-                dedupedArticles.sort(function(a, b) { return b.timestamp - a.timestamp; });
+                dedupedArticles.sort(function (a, b) {
+                    return b.timestamp - a.timestamp;
+                });
                 allArticlesRaw = dedupedArticles;
-                filterArticles(); 
-                
+                filterArticles();
+
                 lastUpdatedText = formatMyTime(new Date());
             }
         }
 
-        sources.forEach(function(url) {
+        sources.forEach(function (url) {
             if (!url || url.trim() === "") {
                 completedRequests++;
                 checkCompletion();
@@ -449,7 +466,8 @@ PlasmoidItem {
             var xhr = null;
 
             function finishOnce() {
-                if (finished) return;
+                if (finished)
+                    return;
                 finished = true;
                 if (timeoutTimer) {
                     timeoutTimer.stop();
@@ -463,16 +481,21 @@ PlasmoidItem {
             try {
                 xhr = new XMLHttpRequest();
                 timeoutTimer = feedTimeoutComponent.createObject(root);
-                timeoutTimer.triggered.connect(function() {
+                timeoutTimer.triggered.connect(function () {
                     if (fetchId === root.currentFetchId) {
-                        try { xhr.abort(); } catch(e) {}
+                        try {
+                            xhr.abort();
+                        } catch (e) {}
                     }
                     finishOnce();
                 });
 
-                xhr.onreadystatechange = function() {
+                xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
-                        if (fetchId !== root.currentFetchId) { finishOnce(); return; } // Drop stale response early
+                        if (fetchId !== root.currentFetchId) {
+                            finishOnce();
+                            return;
+                        } // Drop stale response early
                         if (xhr.status === 200) {
                             parseFeed(xhr.responseText, url, fetchedArticles);
                         }
@@ -489,7 +512,8 @@ PlasmoidItem {
     }
 
     function parseFeed(xmlText, sourceUrl, targetArray) {
-        if (!xmlText) return;
+        if (!xmlText)
+            return;
         var feedTitleMatch = xmlText.match(/<title[^>]*>([\s\S]*?)<\/title>/);
         var feedTitle = feedTitleMatch ? stripTags(feedTitleMatch[1]) : sourceUrl;
         var itemRegex = /<(item|entry)[^>]*>([\s\S]*?)<\/\1>/g;
@@ -498,13 +522,12 @@ PlasmoidItem {
         while ((match = itemRegex.exec(xmlText)) !== null) {
             var content = match[2];
             var titleM = content.match(/<title[^>]*>([\s\S]*?)<\/title>/);
-            
+
             var link = "";
             // Atom entries can list multiple self-closing <link> tags (rel="alternate",
             // "self", "edit", etc). Prefer rel="alternate" - the actual article URL -
             // regardless of whether "rel" or "href" comes first in the tag.
-            var altM = content.match(/<link\b[^>]*\brel=["']alternate["'][^>]*\bhref=["']([^"']+)["']/) ||
-                       content.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']alternate["']/);
+            var altM = content.match(/<link\b[^>]*\brel=["']alternate["'][^>]*\bhref=["']([^"']+)["']/) || content.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']alternate["']/);
             if (altM) {
                 link = altM[1].trim();
             } else {
@@ -515,10 +538,11 @@ PlasmoidItem {
                 } else {
                     // Atom fallback: no rel="alternate" found, take the first href present
                     var hM = content.match(/<link[^>]+href=["']([^"']+)["']/);
-                    if (hM) link = hM[1].trim();
+                    if (hM)
+                        link = hM[1].trim();
                 }
             }
-            
+
             var dM = content.match(/<(pubDate|updated|published)[^>]*>([\s\S]*?)<\/\1>/);
             var pubDate = dM ? stripTags(dM[2]) : "";
             var ts = 0;
@@ -526,12 +550,12 @@ PlasmoidItem {
             try {
                 if (pubDate) {
                     var d = new Date(pubDate);
-                    if (!isNaN(d.getTime())) { 
-                        ts = d.getTime(); 
-                        fmtDate = formatMyDateTime(d); 
+                    if (!isNaN(d.getTime())) {
+                        ts = d.getTime();
+                        fmtDate = formatMyDateTime(d);
                     }
                 }
-            } catch(e) {}
+            } catch (e) {}
 
             targetArray.push({
                 "title": titleM ? stripTags(titleM[1]) : i18n("No Title"),
@@ -544,47 +568,59 @@ PlasmoidItem {
     }
 
     function decodeEntities(text) {
-        if (!text) return text;
+        if (!text)
+            return text;
         var named = {
-            "amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'",
-            "nbsp": " ", "mdash": "\u2014", "ndash": "\u2013", "hellip": "\u2026",
-            "rsquo": "\u2019", "lsquo": "\u2018", "rdquo": "\u201D", "ldquo": "\u201C"
+            "amp": "&",
+            "lt": "<",
+            "gt": ">",
+            "quot": "\"",
+            "apos": "'",
+            "nbsp": " ",
+            "mdash": "\u2014",
+            "ndash": "\u2013",
+            "hellip": "\u2026",
+            "rsquo": "\u2019",
+            "lsquo": "\u2018",
+            "rdquo": "\u201D",
+            "ldquo": "\u201C"
         };
-        var result = text.replace(/&(amp|lt|gt|quot|apos|nbsp|mdash|ndash|hellip|rsquo|lsquo|rdquo|ldquo);/g, function(m, name) {
+        var result = text.replace(/&(amp|lt|gt|quot|apos|nbsp|mdash|ndash|hellip|rsquo|lsquo|rdquo|ldquo);/g, function (m, name) {
             return named[name] !== undefined ? named[name] : m;
         });
-        result = result.replace(/&#(\d+);/g, function(m, dec) {
+        result = result.replace(/&#(\d+);/g, function (m, dec) {
             return String.fromCharCode(parseInt(dec, 10));
         });
-        result = result.replace(/&#x([0-9a-fA-F]+);/g, function(m, hex) {
+        result = result.replace(/&#x([0-9a-fA-F]+);/g, function (m, hex) {
             return String.fromCharCode(parseInt(hex, 16));
         });
         return result;
     }
 
     function stripTags(html) {
-        if (!html) return "";
+        if (!html)
+            return "";
         var clean = html.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
         clean = clean.replace(/<\/?[^>]+(>|$)/g, "");
         return decodeEntities(clean).trim();
     }
-    
+
     Component.onCompleted: {
         root.initializing = true;
         if (instanceSettings.seeded) {
             // Normal startup: restore our values, overwriting whatever KDE left in appletsrc.
-            Plasmoid.configuration.sourcesJson      = instanceSettings.sourcesJson;
+            Plasmoid.configuration.sourcesJson = instanceSettings.sourcesJson;
             Plasmoid.configuration.excludeRegexJson = instanceSettings.excludeRegexJson;
-            Plasmoid.configuration.customTitle      = instanceSettings.customTitle;
-            Plasmoid.configuration.refreshTime      = instanceSettings.refreshTime;
+            Plasmoid.configuration.customTitle = instanceSettings.customTitle;
+            Plasmoid.configuration.refreshTime = instanceSettings.refreshTime;
         } else {
             // First run of this version: seed Settings from Plasmoid.configuration so that
             // any sources already configured (in older versions) are preserved.
-            instanceSettings.sourcesJson      = Plasmoid.configuration.sourcesJson;
+            instanceSettings.sourcesJson = Plasmoid.configuration.sourcesJson;
             instanceSettings.excludeRegexJson = Plasmoid.configuration.excludeRegexJson;
-            instanceSettings.customTitle      = Plasmoid.configuration.customTitle;
-            instanceSettings.refreshTime      = Plasmoid.configuration.refreshTime;
-            instanceSettings.seeded           = true;
+            instanceSettings.customTitle = Plasmoid.configuration.customTitle;
+            instanceSettings.refreshTime = Plasmoid.configuration.refreshTime;
+            instanceSettings.seeded = true;
         }
         root.initializing = false;
         fetchFeeds();
