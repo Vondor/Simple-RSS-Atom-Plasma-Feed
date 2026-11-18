@@ -64,10 +64,15 @@ kpackagetool6 -t Plasma/Applet -i rssreader.plasmoid
 ```sh
 git clone https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed.git
 cd Simple-RSS-Atom-Plasma-Feed
-kpackagetool6 -t Plasma/Applet -i .
+sh ci/build-plasmoid.sh
+kpackagetool6 -t Plasma/Applet -i dist/SimpleRSSFeed-*.plasmoid
 ```
 
-To update an existing installation, use `-u` instead of `-i`.
+The build writes the build number of the checked-out commit into the
+package, so the widget shows which build it is. `kpackagetool6 -t Plasma/Applet -i .`
+also works, but then the widget shows the hand-set `Version` from
+`metadata.json` instead. To update an existing installation, use `-u` instead
+of `-i`; delete `dist/` first if it holds older builds.
 To remove it: `kpackagetool6 -t Plasma/Applet -r org.kde.plasma.rssreader`.
 
 If the widget does not show up in the widget browser right away, run
@@ -124,21 +129,25 @@ reuse lint                       # licence headers (pipx run reuse lint)
 
 ### Version numbers and releases
 
-Versions are numbered `1.YYMMDD.N`: the release date (UTC), then a counter
-from 0 for a further release on the same day, for example `1.261118.0`
-(D-012). They always go up, so the KDE Store and Plasma see every release
+Every build is numbered `1.YYMMDD.N` (D-012, D-025): the UTC date of the
+commit, then how many merges to `main` came earlier that day, from 0. The
+third merge on 2026-11-18 is `1.261118.2`. The number is worked out from git
+(`sh ci/build-version.sh` prints it for `HEAD` or a given commit), so every
+merged patch raises it and no pull request edits a version file.
+`ci/build-plasmoid.sh` writes it into the packaged `metadata.json`; the
+`Version` in the checkout is only a hand-set fallback for builds without git
+history. Numbers always go up, so the KDE Store and Plasma see every release
 as newer than 1.6.1.
 
-To publish a release:
+To publish a release of the current `main`:
 
-1. `git fetch --tags && sh ci/next-version.sh` prints the number to use.
-2. Write it into `Version` in `metadata.json` in a small pull request and
-   merge it.
-3. Tag the merged commit and push the tag, for example
-   `git tag -a v1.261118.0 -m "Release 1.261118.0" && git push origin v1.261118.0`.
+1. `git fetch origin && sh ci/build-version.sh origin/main` prints the number,
+   for example `1.261118.17`.
+2. Tag that commit and push the tag:
+   `git tag -a v1.261118.17 origin/main -m "Release 1.261118.17" && git push origin v1.261118.17`.
 
-The release workflow checks that the tag matches `Version` and that the tagged
-commit is on `main`, then attaches
+The release workflow checks that the tag is the build number of the tagged
+commit and that the commit is on `main`, then attaches
 `SimpleRSSFeed-1-261118-0.plasmoid` and `SimpleRSSFeed-1-261118-0.tar.gz`
 (the source) to a GitHub release. Download both from the release page and
 upload them to the [KDE Store](https://store.kde.org/p/2363221).
