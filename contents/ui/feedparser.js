@@ -87,42 +87,74 @@ function formatTime(date) {
     return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + (tz ? " " + tz : "");
 }
 
+// Named entities that feeds commonly use. XML itself only defines the first
+// five; the rest come from HTML and appear in feeds anyway.
+var NAMED_ENTITIES = {
+    "amp": "&",
+    "lt": "<",
+    "gt": ">",
+    "quot": "\"",
+    "apos": "'",
+    "nbsp": " ",
+    "mdash": "—",
+    "ndash": "–",
+    "hellip": "…",
+    "rsquo": "’",
+    "lsquo": "‘",
+    "rdquo": "”",
+    "ldquo": "“"
+};
+
+// Decodes named and numeric character references in one pass, so that a
+// decoded "&" never starts a second reference ("&amp;#60;" is the text
+// "&#60;", issue #30). Code points above U+FFFF (emoji) are kept whole; an
+// unknown name or an invalid number is left as written.
 function decodeEntities(text) {
     if (!text)
         return text;
-    var named = {
-        "amp": "&",
-        "lt": "<",
-        "gt": ">",
-        "quot": "\"",
-        "apos": "'",
-        "nbsp": " ",
-        "mdash": "—",
-        "ndash": "–",
-        "hellip": "…",
-        "rsquo": "’",
-        "lsquo": "‘",
-        "rdquo": "”",
-        "ldquo": "“"
-    };
-    var result = text.replace(/&(amp|lt|gt|quot|apos|nbsp|mdash|ndash|hellip|rsquo|lsquo|rdquo|ldquo);/g, function (m, name) {
-        return named[name] !== undefined ? named[name] : m;
+    return text.replace(/&(?:#[xX]([0-9a-fA-F]+)|#([0-9]+)|([a-zA-Z]+));/g, function (m, hex, dec, name) {
+        if (name !== undefined && name !== "")
+            return NAMED_ENTITIES[name] !== undefined ? NAMED_ENTITIES[name] : m;
+        var code = (hex !== undefined && hex !== "") ? parseInt(hex, 16) : parseInt(dec, 10);
+        if (!(code > 0) || code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF))
+            return m;
+        return String.fromCodePoint(code);
     });
-    result = result.replace(/&#(\d+);/g, function (m, dec) {
-        return String.fromCharCode(parseInt(dec, 10));
-    });
-    result = result.replace(/&#x([0-9a-fA-F]+);/g, function (m, hex) {
-        return String.fromCharCode(parseInt(hex, 16));
-    });
-    return result;
 }
 
+// Removes markup: comments, and tags that start like a real tag ("<b>",
+// "</b>", "<br/>"). A "<" followed by a space or digit is text ("3 < 5").
+function removeTags(text) {
+    return text.replace(/<!--[\s\S]*?(-->|$)/g, "").replace(/<\/?[A-Za-z][^>]*(>|$)/g, "");
+}
+
+// Turns the content of an element into plain text to show: tags removed,
+// entities decoded once, runs of whitespace (line breaks, indentation)
+// collapsed to one space. A CDATA section is cut out before the tags are
+// removed, so a "<" inside it can never swallow the text around it; its own
+// content is treated like HTML (tags removed, entities decoded), which is how
+// feeds use CDATA in practice.
 function stripTags(html) {
     if (!html)
         return "";
-    var clean = html.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
-    clean = clean.replace(/<\/?[^>]+(>|$)/g, "");
-    return decodeEntities(clean).trim();
+    var out = "";
+    var cdataRegex = /<!\[CDATA\[([\s\S]*?)(\]\]>|$)/g;
+    var last = 0;
+    var m;
+    while ((m = cdataRegex.exec(html)) !== null) {
+        out += decodeEntities(removeTags(html.slice(last, m.index)));
+        out += decodeEntities(removeTags(m[1]));
+        last = cdataRegex.lastIndex;
+        if (m[0] === "")
+            break;
+    }
+    out += decodeEntities(removeTags(html.slice(last)));
+    return out.replace(/\s+/g, " ").trim();
+}
+
+// The text of an attribute value: entities decoded, whitespace trimmed.
+function attributeText(value) {
+    return decodeEntities(value || "").trim();
 }
 
 // Turns one feed document (RSS <item> or Atom <entry>) into articles:
@@ -132,14 +164,21 @@ function parseFeed(xmlText, sourceUrl, noTitle) {
     var articles = [];
     if (!xmlText)
         return articles;
-    var feedTitleMatch = xmlText.match(/<title[^>]*>([\s\S]*?)<\/title>/);
-    var feedTitle = feedTitleMatch ? stripTags(feedTitleMatch[1]) : sourceUrl;
-    var itemRegex = /<(item|entry)[^>]*>([\s\S]*?)<\/\1>/g;
+    // The source name is the feed's own <title>: the first one before the
+    // first item, not counting the <title> of a channel <image>.
+    var firstItem = xmlText.search(/<(item|entry)\b/);
+    var head = (firstItem >= 0 ? xmlText.slice(0, firstItem) : xmlText).replace(/<image\b[^>]*>[\s\S]*?<\/image>/g, "");
+    var feedTitleMatch = head.match(/<title\b[^>]*>([\s\S]*?)<\/title>/);
+    var feedTitle = feedTitleMatch ? stripTags(feedTitleMatch[1]) : "";
+    if (feedTitle === "")
+        feedTitle = sourceUrl;
+    // "\b" keeps RSS 1.0's <items> list from being read as an item.
+    var itemRegex = /<(item|entry)\b[^>]*>([\s\S]*?)<\/\1>/g;
     var match;
 
     while ((match = itemRegex.exec(xmlText)) !== null) {
         var content = match[2];
-        var titleM = content.match(/<title[^>]*>([\s\S]*?)<\/title>/);
+        var titleM = content.match(/<title\b[^>]*>([\s\S]*?)<\/title>/);
 
         var link = "";
         // Atom entries can list multiple self-closing <link> tags (rel="alternate",
@@ -147,7 +186,7 @@ function parseFeed(xmlText, sourceUrl, noTitle) {
         // regardless of whether "rel" or "href" comes first in the tag.
         var altM = content.match(/<link\b[^>]*\brel=["']alternate["'][^>]*\bhref=["']([^"']+)["']/) || content.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']alternate["']/);
         if (altM) {
-            link = altM[1].trim();
+            link = attributeText(altM[1]);
         } else {
             var linkM = content.match(/<link[^>]*>([\s\S]*?)<\/link>/);
             if (linkM && linkM[1].trim() !== "" && !linkM[1].includes("href=")) {
@@ -157,7 +196,18 @@ function parseFeed(xmlText, sourceUrl, noTitle) {
                 // Atom fallback: no rel="alternate" found, take the first href present
                 var hM = content.match(/<link[^>]+href=["']([^"']+)["']/);
                 if (hM)
-                    link = hM[1].trim();
+                    link = attributeText(hM[1]);
+            }
+        }
+        if (link === "") {
+            // RSS 2.0: an item without <link> may name its address in <guid>,
+            // which is a permalink unless isPermaLink="false". Only a web
+            // address is taken, as a guid is often just an id.
+            var gM = content.match(/<guid\b([^>]*)>([\s\S]*?)<\/guid>/);
+            if (gM && !/\bisPermaLink=["']false["']/i.test(gM[1])) {
+                var guid = stripTags(gM[2]);
+                if (/^https?:\/\//i.test(guid))
+                    link = guid;
             }
         }
 
