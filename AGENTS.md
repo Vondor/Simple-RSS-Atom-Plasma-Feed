@@ -63,7 +63,7 @@ Tick every gate a pull request touches, so the record shows it.
 - Any use of code from other projects
 - A pull request from anyone who is not the owner's own agent team
 
-Agents do not merge pull requests in this repository unless the owner says so for that pull request or records a general permission here (D-007).
+Agents may merge a pull request in this repository once its CI is green and no other gate in this list is ticked on it. The first bullet (merging, tagging, version, store publishing) is covered by this permission, so only a pull request that changes the version number, tags a release, publishes to the KDE Store or ticks another gate waits for the owner to merge it. The owner gave this general permission on 2026-11-18 (D-013), as D-007 requires it to be recorded here.
 
 ### 3.3 Non-goals
 - Not a full feed reader: no read/unread tracking, no article bodies, no offline cache, no accounts or sync. Clicking an article opens it in the browser.
