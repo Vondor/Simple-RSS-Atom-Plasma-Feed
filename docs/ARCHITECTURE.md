@@ -8,7 +8,7 @@ A Plasma 6 KPackage (`Plasma/Applet`) of plain QML. `main.qml` reads the instanc
 ## Components
 | Component | Responsibility | Depends on |
 |---|---|---|
-| `metadata.json` | id, name, version (`1.YYMMDD.N`, D-012), licence, icon, translated name and description | — |
+| `metadata.json` | id, name, version (`1.YYMMDD.N`, D-012), licence, icon, website (KDE Store) and bug-report link (GitHub issues) for the About page, translated name and description | — |
 | `contents/ui/main.qml` | compact and full views, feed loading with a 15 s timeout per feed, the list model | QtQuick, Layouts, Controls, Kirigami, Plasma components, plasmoid, QtCore, `feedparser.js` |
 | `contents/ui/feedparser.js` | pure functions (`.pragma library`, no QML items, no `i18n()`): reading the stored sources and blacklist, parsing RSS/Atom into articles, blacklist, duplicates, newest-first order, search filter, reading feed dates and formatting them in the user's locale (D-015, D-017) | the QML JavaScript engine only |
 | `contents/ui/configGeneral.qml` | settings page (title, interval, sources, blacklist) | QtQuick, Controls, Layouts, Kirigami |
