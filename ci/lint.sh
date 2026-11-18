@@ -55,7 +55,7 @@ while IFS= read -r f; do
         err "$f" "no newline at end of file"
     fi
     case "$f" in
-        *.qml|*.sh|*.py|*.xml|*.json|*.yml|*.svg)
+        *.qml|*.js|*.sh|*.py|*.xml|*.json|*.yml|*.svg)
             if grep -q "$TAB" "$f"; then err "$f" "tab character; indent with spaces"; fi ;;
     esac
 done < "$WORK/files"

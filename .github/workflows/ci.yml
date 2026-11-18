@@ -56,6 +56,21 @@ jobs:
           QMLFORMAT: pyside6-qmlformat
         run: sh ci/lint.sh
 
+  # Feed parser cases (ci/test-parser.py, D-015) run contents/ui/feedparser.js
+  # in Qt's own QML engine. PySide6 is the same pin as the Lint job and is a
+  # test tool only, not a widget dependency.
+  parser:
+    name: Parser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Qt's QML engine (Qt 6.12, via PySide6)
+        run: |
+          python3 -m venv "$RUNNER_TEMP/qt"
+          "$RUNNER_TEMP/qt/bin/pip" install -q "pyside6-essentials==6.12.0"
+      - name: Parser tests
+        run: '"$RUNNER_TEMP/qt/bin/python" ci/test-parser.py'
+
   package:
     name: Package and translations
     runs-on: ubuntu-latest

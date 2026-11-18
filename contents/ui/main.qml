@@ -8,6 +8,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 import QtCore
+import "feedparser.js" as FeedParser
 
 PlasmoidItem {
     id: root
@@ -118,88 +119,12 @@ PlasmoidItem {
         }
     }
 
-    // CUSTOM FORMATTERS FOR TIME, DATE, AND TIMEZONES
-    function formatMyDateTime(date) {
-        if (!date || isNaN(date.getTime()))
-            return "";
-
-        var day = ("0" + date.getDate()).slice(-2);
-        var month = ("0" + (date.getMonth() + 1)).slice(-2);
-        var year = ("0" + date.getFullYear()).slice(-2);
-
-        var hours = ("0" + date.getHours()).slice(-2);
-        var minutes = ("0" + date.getMinutes()).slice(-2);
-
-        var tz = "";
-        try {
-            var parts = new Intl.DateTimeFormat('en', {
-                timeZoneName: 'short'
-            }).formatToParts(date);
-            for (var i = 0; i < parts.length; i++) {
-                if (parts[i].type === 'timeZoneName') {
-                    tz = parts[i].value;
-                    break;
-                }
-            }
-        } catch (e) {
-            var match = date.toString().match(/\(([^)]+)\)$/);
-            if (match)
-                tz = match[1];
-        }
-
-        return day + "." + month + "." + year + " " + hours + ":" + minutes + (tz ? " " + tz : "");
-    }
-
-    function formatMyTime(date) {
-        if (!date || isNaN(date.getTime()))
-            return "";
-
-        var hours = ("0" + date.getHours()).slice(-2);
-        var minutes = ("0" + date.getMinutes()).slice(-2);
-
-        var tz = "";
-        try {
-            var parts = new Intl.DateTimeFormat('en', {
-                timeZoneName: 'short'
-            }).formatToParts(date);
-            for (var i = 0; i < parts.length; i++) {
-                if (parts[i].type === 'timeZoneName') {
-                    tz = parts[i].value;
-                    break;
-                }
-            }
-        } catch (e) {
-            var match = date.toString().match(/\(([^)]+)\)$/);
-            if (match)
-                tz = match[1];
-        }
-
-        return hours + ":" + minutes + (tz ? " " + tz : "");
-    }
-
+    // Fills the visible list with the articles matching the search box.
     function filterArticles() {
         articlesModel.clear();
-        var query = root.searchQuery.trim();
-
-        if (query === "") {
-            for (var i = 0; i < allArticlesRaw.length; i++) {
-                articlesModel.append(allArticlesRaw[i]);
-            }
-            return;
-        }
-
-        var regex;
-        try {
-            regex = new RegExp(query, "i");
-        } catch (e) {
-            return;
-        }
-
-        for (var j = 0; j < allArticlesRaw.length; j++) {
-            var item = allArticlesRaw[j];
-            if (regex.test(item.title) || regex.test(item.source)) {
-                articlesModel.append(item);
-            }
+        var shown = FeedParser.filterArticles(allArticlesRaw, root.searchQuery);
+        for (var i = 0; i < shown.length; i++) {
+            articlesModel.append(shown[i]);
         }
     }
 
@@ -366,30 +291,17 @@ PlasmoidItem {
             return;
         }
 
-        // Plasmoid.configuration was pre-populated from SQLite on startup, so this
-        // is normally a plain JSON array. Legacy branches handle old-format installs.
-        var sources = [];
-        var myExcludes = [];
-        try {
-            var parsed = JSON.parse(jsonStr);
-            if (Array.isArray(parsed)) {
-                sources = parsed;
-            } else if (parsed && typeof parsed === "object") {
-                if (parsed.v === 1)
-                    sources = parsed.sources || [];
-                else if (parsed.v === 2)
-                    sources = ((parsed.instances || {})[String(Plasmoid.id)] || {}).sources || [];
-            }
-        } catch (e) {
+        // Plasmoid.configuration was restored from this instance's Settings on
+        // startup, so this is normally a plain JSON array; parseSources() also
+        // reads the formats older versions wrote.
+        var sources = FeedParser.parseSources(jsonStr, Plasmoid.id);
+        if (sources === null) {
             lastUpdatedText = i18n("JSON Parse Error");
             return;
         }
+        var myExcludes = FeedParser.parseExcludes(Plasmoid.configuration.excludeRegexJson);
 
-        try {
-            myExcludes = JSON.parse(Plasmoid.configuration.excludeRegexJson || "[]");
-        } catch (e) {}
-
-        if (!Array.isArray(sources) || sources.length === 0) {
+        if (sources.length === 0) {
             lastUpdatedText = i18n("No sources configured");
             articlesModel.clear();
             allArticlesRaw = [];
@@ -407,54 +319,10 @@ PlasmoidItem {
                 return;
 
             if (completedRequests === sources.length) {
-                // Excludes were already extracted from the v2 config above.
-                var excludePatterns = Array.isArray(myExcludes) ? myExcludes : [];
-
-                var compiledExcludes = [];
-                for (var k = 0; k < excludePatterns.length; k++) {
-                    try {
-                        if (excludePatterns[k].trim() !== "") {
-                            compiledExcludes.push(new RegExp(excludePatterns[k], "i"));
-                        }
-                    } catch (err) {}
-                }
-
-                var allowedArticles = [];
-                for (var i = 0; i < fetchedArticles.length; i++) {
-                    var article = fetchedArticles[i];
-                    var shouldExclude = false;
-                    for (var r = 0; r < compiledExcludes.length; r++) {
-                        if (compiledExcludes[r].test(article.title) || compiledExcludes[r].test(article.source)) {
-                            shouldExclude = true;
-                            break;
-                        }
-                    }
-                    if (!shouldExclude) {
-                        allowedArticles.push(article);
-                    }
-                }
-
-                // De-duplicate: same article can appear if a feed URL is listed twice,
-                // or if two different sources syndicate the same item. Key on the link
-                // when present, otherwise fall back to source+title.
-                var seenKeys = {};
-                var dedupedArticles = [];
-                for (var d = 0; d < allowedArticles.length; d++) {
-                    var dedupArticle = allowedArticles[d];
-                    var dedupKey = dedupArticle.link ? dedupArticle.link : (dedupArticle.source + "|" + dedupArticle.title);
-                    if (!seenKeys[dedupKey]) {
-                        seenKeys[dedupKey] = true;
-                        dedupedArticles.push(dedupArticle);
-                    }
-                }
-
-                dedupedArticles.sort(function (a, b) {
-                    return b.timestamp - a.timestamp;
-                });
-                allArticlesRaw = dedupedArticles;
+                allArticlesRaw = FeedParser.mergeArticles(fetchedArticles, myExcludes);
                 filterArticles();
 
-                lastUpdatedText = formatMyTime(new Date());
+                lastUpdatedText = FeedParser.formatTime(new Date());
             }
         }
 
@@ -501,7 +369,9 @@ PlasmoidItem {
                             return;
                         } // Drop stale response early
                         if (xhr.status === 200) {
-                            parseFeed(xhr.responseText, url, fetchedArticles);
+                            var parsed = FeedParser.parseFeed(xhr.responseText, url, i18n("No Title"));
+                            for (var p = 0; p < parsed.length; p++)
+                                fetchedArticles.push(parsed[p]);
                         }
                         finishOnce();
                     }
@@ -513,100 +383,6 @@ PlasmoidItem {
                 finishOnce();
             }
         });
-    }
-
-    function parseFeed(xmlText, sourceUrl, targetArray) {
-        if (!xmlText)
-            return;
-        var feedTitleMatch = xmlText.match(/<title[^>]*>([\s\S]*?)<\/title>/);
-        var feedTitle = feedTitleMatch ? stripTags(feedTitleMatch[1]) : sourceUrl;
-        var itemRegex = /<(item|entry)[^>]*>([\s\S]*?)<\/\1>/g;
-        var match;
-
-        while ((match = itemRegex.exec(xmlText)) !== null) {
-            var content = match[2];
-            var titleM = content.match(/<title[^>]*>([\s\S]*?)<\/title>/);
-
-            var link = "";
-            // Atom entries can list multiple self-closing <link> tags (rel="alternate",
-            // "self", "edit", etc). Prefer rel="alternate" - the actual article URL -
-            // regardless of whether "rel" or "href" comes first in the tag.
-            var altM = content.match(/<link\b[^>]*\brel=["']alternate["'][^>]*\bhref=["']([^"']+)["']/) || content.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']alternate["']/);
-            if (altM) {
-                link = altM[1].trim();
-            } else {
-                var linkM = content.match(/<link[^>]*>([\s\S]*?)<\/link>/);
-                if (linkM && linkM[1].trim() !== "" && !linkM[1].includes("href=")) {
-                    // RSS-style: <link>http://example.com</link>
-                    link = stripTags(linkM[1]).trim();
-                } else {
-                    // Atom fallback: no rel="alternate" found, take the first href present
-                    var hM = content.match(/<link[^>]+href=["']([^"']+)["']/);
-                    if (hM)
-                        link = hM[1].trim();
-                }
-            }
-
-            var dM = content.match(/<(pubDate|updated|published)[^>]*>([\s\S]*?)<\/\1>/);
-            var pubDate = dM ? stripTags(dM[2]) : "";
-            var ts = 0;
-            var fmtDate = pubDate;
-            try {
-                if (pubDate) {
-                    var d = new Date(pubDate);
-                    if (!isNaN(d.getTime())) {
-                        ts = d.getTime();
-                        fmtDate = formatMyDateTime(d);
-                    }
-                }
-            } catch (e) {}
-
-            targetArray.push({
-                "title": titleM ? stripTags(titleM[1]) : i18n("No Title"),
-                "source": feedTitle,
-                "date": fmtDate,
-                "timestamp": ts,
-                "link": link
-            });
-        }
-    }
-
-    function decodeEntities(text) {
-        if (!text)
-            return text;
-        var named = {
-            "amp": "&",
-            "lt": "<",
-            "gt": ">",
-            "quot": "\"",
-            "apos": "'",
-            "nbsp": " ",
-            "mdash": "\u2014",
-            "ndash": "\u2013",
-            "hellip": "\u2026",
-            "rsquo": "\u2019",
-            "lsquo": "\u2018",
-            "rdquo": "\u201D",
-            "ldquo": "\u201C"
-        };
-        var result = text.replace(/&(amp|lt|gt|quot|apos|nbsp|mdash|ndash|hellip|rsquo|lsquo|rdquo|ldquo);/g, function (m, name) {
-            return named[name] !== undefined ? named[name] : m;
-        });
-        result = result.replace(/&#(\d+);/g, function (m, dec) {
-            return String.fromCharCode(parseInt(dec, 10));
-        });
-        result = result.replace(/&#x([0-9a-fA-F]+);/g, function (m, hex) {
-            return String.fromCharCode(parseInt(hex, 16));
-        });
-        return result;
-    }
-
-    function stripTags(html) {
-        if (!html)
-            return "";
-        var clean = html.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
-        clean = clean.replace(/<\/?[^>]+(>|$)/g, "");
-        return decodeEntities(clean).trim();
     }
 
     Component.onCompleted: {

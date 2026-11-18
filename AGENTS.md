@@ -91,7 +91,8 @@ Agents may merge a pull request in this repository once its CI is green and no o
 metadata.json                 package id, name, version, license, translated name/description
 contents/config/main.xml      settings schema (KConfigXT)
 contents/config/config.qml    settings pages
-contents/ui/main.qml          widget, feed loading and parsing, list
+contents/ui/main.qml          widget, feed loading, list
+contents/ui/feedparser.js     feed parsing, blacklist, duplicates, order, search (pure functions, tested by ci/test-parser.py)
 contents/ui/configGeneral.qml settings page
 contents/icons/rssreader.svg  widget icon ("Icon": "rssreader")
 contents/screenshot.png       widget-browser picture, also drawn by the compact view
@@ -122,6 +123,7 @@ docs/                         decisions, roadmap, architecture, glossary, threat
    python3 ci/check-package.py      # metadata, layout, icon
    sh ci/lint.sh                    # whitespace, JSON/XML, qmlformat style, shellcheck (sh ci/lint.sh --fix formats QML)
    sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
+   python3 ci/test-parser.py        # feed parser cases in Qt's QML engine (needs pyside6-essentials 6.12 in that Python)
    sh ci/build-plasmoid.sh          # writes dist/SimpleRSSFeed-<version with dashes>.plasmoid
    reuse lint                       # licence headers (pipx run reuse lint)
    /usr/lib/qt6/bin/qmllint contents/ui/*.qml   # expect some Kirigami stub noise
