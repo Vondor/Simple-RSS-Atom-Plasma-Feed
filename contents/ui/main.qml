@@ -26,6 +26,7 @@ PlasmoidItem {
     property string searchQuery: ""
     property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
     property bool initializing: false  // blocks Connections writes during startup restore
+    property bool removedByUser: false // the user removed this widget and has not undone it
 
     property string currentTitle: {
         try {
@@ -83,9 +84,9 @@ PlasmoidItem {
         onTriggered: fetchFeeds()
     }
 
-    // Per-instance settings in a plain INI file under ~/.config/.
-    // category is keyed by Plasmoid.id so every instance is fully isolated.
-    // Qt.labs.settings persists every property automatically — no manual I/O needed.
+    // Per-instance settings in a plain INI file under ~/.config/ (D-004).
+    // category is keyed by Plasmoid.id so every instance is fully isolated;
+    // QtCore's Settings persists every property automatically.
     Settings {
         id: instanceSettings
         category: "SimpleRSSFeed_" + Plasmoid.id
@@ -97,6 +98,40 @@ PlasmoidItem {
         // Becomes true after the first successful seed so Component.onCompleted
         // knows to RESTORE from here rather than seed from Plasmoid.configuration.
         property bool seeded: false
+        // True from the moment the user removes this widget (D-022). Plasma
+        // gives the id of a removed widget to a new one, which must not take
+        // over these values. Only ever set for this instance's own category.
+        property bool removed: false
+    }
+
+    // Plasma emits destroyedChanged(true) when the user removes the widget
+    // (or its panel) and destroyedChanged(false) when they press "Undo" in
+    // the notification. It is not emitted on logout, shutdown or a Plasma
+    // restart, so the settings of a widget that stays are never marked.
+    Connections {
+        target: Plasmoid
+        function onDestroyedChanged(destroyed) {
+            root.removedByUser = destroyed;
+            instanceSettings.removed = destroyed;
+        }
+    }
+
+    // Runs when the widget object goes away: on shutdown (removedByUser is
+    // false, nothing happens) and when a removal becomes final after the
+    // undo time. Only then are this instance's stored values emptied, so the
+    // removed widget's feed addresses do not stay in the settings file. The
+    // "removed" mark above is what protects a new widget; this is tidying up.
+    Component.onDestruction: {
+        if (!root.removedByUser)
+            return;
+        try {
+            instanceSettings.sourcesJson = "[]";
+            instanceSettings.excludeRegexJson = "[]";
+            instanceSettings.customTitle = "";
+            instanceSettings.refreshTime = 15;
+            instanceSettings.seeded = false;
+            instanceSettings.sync();
+        } catch (e) {}
     }
 
     Connections {
@@ -496,20 +531,30 @@ PlasmoidItem {
 
     Component.onCompleted: {
         root.initializing = true;
-        if (instanceSettings.seeded) {
+        if (FeedParser.restoresStoredSettings(instanceSettings.seeded, instanceSettings.removed)) {
             // Normal startup: restore our values, overwriting whatever KDE left in appletsrc.
             Plasmoid.configuration.sourcesJson = instanceSettings.sourcesJson;
             Plasmoid.configuration.excludeRegexJson = instanceSettings.excludeRegexJson;
             Plasmoid.configuration.customTitle = instanceSettings.customTitle;
             Plasmoid.configuration.refreshTime = instanceSettings.refreshTime;
         } else {
-            // First run of this version: seed Settings from Plasmoid.configuration so that
-            // any sources already configured (in older versions) are preserved.
+            // First run of this widget: seed Settings from Plasmoid.configuration so that
+            // any sources already configured (in older versions) are preserved. Also the
+            // path for a new widget whose id was used by a removed one (D-022): what that
+            // one stored is replaced, not taken over.
             instanceSettings.sourcesJson = Plasmoid.configuration.sourcesJson;
             instanceSettings.excludeRegexJson = Plasmoid.configuration.excludeRegexJson;
             instanceSettings.customTitle = Plasmoid.configuration.customTitle;
             instanceSettings.refreshTime = Plasmoid.configuration.refreshTime;
             instanceSettings.seeded = true;
+            instanceSettings.removed = false;
+        }
+        // A feed list in one of the older formats is rewritten as the plain list
+        // the settings page reads; the feeds stay the same (issue #34).
+        var plainSources = FeedParser.plainSourcesJson(instanceSettings.sourcesJson, Plasmoid.id);
+        if (plainSources !== instanceSettings.sourcesJson) {
+            instanceSettings.sourcesJson = plainSources;
+            Plasmoid.configuration.sourcesJson = plainSources;
         }
         root.initializing = false;
         fetchFeeds();

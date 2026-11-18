@@ -35,6 +35,30 @@ function parseSources(jsonStr, plasmoidId) {
     return Array.isArray(sources) ? sources : [];
 }
 
+// The stored sourcesJson as the plain array text the settings page reads.
+// A value in one of the older formats is converted, so the page lists those
+// feeds instead of an empty list (issue #34); a plain array and text that is
+// not valid JSON come back unchanged, so nothing is lost by converting.
+function plainSourcesJson(jsonStr, plasmoidId) {
+    var parsed;
+    try {
+        parsed = JSON.parse(jsonStr);
+    } catch (e) {
+        return jsonStr;
+    }
+    if (Array.isArray(parsed))
+        return jsonStr;
+    return JSON.stringify(parseSources(jsonStr, plasmoidId));
+}
+
+// Whether a starting widget takes over the settings stored under its
+// Plasmoid.id (D-022). Plasma hands the id of a removed widget to a new one,
+// so settings marked as removed belong to a widget that no longer exists and
+// are not taken over; the new widget then starts from its defaults.
+function restoresStoredSettings(seeded, removed) {
+    return seeded === true && removed !== true;
+}
+
 // Reads the stored excludeRegexJson setting; anything unreadable is no blacklist.
 function parseExcludes(jsonStr) {
     try {
