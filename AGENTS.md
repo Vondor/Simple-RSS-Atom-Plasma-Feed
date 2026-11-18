@@ -120,6 +120,7 @@ docs/                         decisions, roadmap, architecture, glossary, threat
 
    ```
    python3 ci/check-package.py      # metadata, layout, icon
+   sh ci/lint.sh                    # whitespace, JSON/XML, qmlformat style, shellcheck (sh ci/lint.sh --fix formats QML)
    sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
    sh ci/build-plasmoid.sh          # writes dist/rssreader-<version>.plasmoid
    reuse lint                       # licence headers (pipx run reuse lint)

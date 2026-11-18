@@ -16,7 +16,7 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | D-008 | 2026-11-18 | Every commit is signed off under the DCO; agents sign off in the owner's identity (Fabian Drywa) as committer, as in the owner's other products. CI checks it on pull requests. Decided by the owner. | Part of the team's product standard. | Q-001 |
 | D-009 | 2026-11-18 | The widget is in release stage Gold. Decided by the owner. | It is public on the KDE Store at 1.6.1. | Q-002 |
 | D-010 | 2026-11-18 | The documentation is licensed like the code, GPL-3.0-or-later (`REUSE.toml`). Decided by the owner. | One licence for the whole project. | Q-003 |
-| D-011 | Reserved | spare number: the coordinator hands it out; the PR that records the decision replaces this row | | |
+| D-011 | 2026-11-18 | QML code style is whatever `qmlformat` from Qt 6.12 writes (default settings); CI job "Lint" (`ci/lint.sh`) checks it together with whitespace, JSON/XML parsing, shellcheck and Python syntax. `sh ci/lint.sh --fix` reformats. Decided by the AI (Claude Code, Claude Opus 5.5), pending the owner's review in the PR. | The owner asked for a check that the code format is valid; qmlformat is Qt's own formatter and needs nothing in the widget. Pinned because its output changes between Qt versions. | this PR |
 | D-012 | Reserved | spare number | | |
 
 # Open questions

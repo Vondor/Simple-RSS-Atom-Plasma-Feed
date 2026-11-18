@@ -39,6 +39,23 @@ jobs:
       - uses: actions/checkout@v5
       - run: pipx run reuse lint
 
+  # Format and syntax lints (ci/lint.sh, D-011). qmlformat is pinned through
+  # PySide6 because its output changes between Qt versions; shellcheck ships
+  # with the ubuntu-latest runner image. Neither is a widget dependency.
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install qmlformat (Qt 6.12, via PySide6)
+        run: |
+          pipx install "pyside6-essentials==6.12.0"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Lint
+        env:
+          QMLFORMAT: pyside6-qmlformat
+        run: sh ci/lint.sh
+
   package:
     name: Package and translations
     runs-on: ubuntu-latest

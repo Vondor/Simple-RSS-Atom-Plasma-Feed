@@ -13,7 +13,7 @@ A Plasma 6 KPackage (`Plasma/Applet`) of plain QML. `main.qml` reads the instanc
 | `contents/ui/configGeneral.qml` | settings page (title, interval, sources, blacklist) | QtQuick, Controls, Layouts, Kirigami |
 | `contents/config/main.xml`, `config.qml` | settings schema and settings pages | KConfigXT |
 | `contents/locale/` | compiled translations, built from `translate/*.po` | gettext at build time only |
-| `ci/` | package checks, translation check, `.plasmoid` build, stock-distro install test | Python 3, zip, gettext, containers |
+| `ci/` | package checks, format lints (`lint.sh`), translation check, `.plasmoid` build, stock-distro install test | Python 3, zip, gettext, shellcheck, qmlformat, containers |
 
 ## Data storage
 Only the user's settings: feed URLs, blacklist patterns, title, refresh interval. They live in `QtCore` `Settings` under the category `SimpleRSSFeed_<Plasmoid.id>`, one per widget instance (D-004). Feed articles are kept in memory only and fetched again on refresh. A settings change must keep reading the values an older version wrote.
