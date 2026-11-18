@@ -106,12 +106,16 @@ contain only the distribution's stock Plasma packages. It fails if a QML
 import is not provided by a stock install, if `kpackagetool6` cannot install
 the file, or if the widget logs QML errors while loading. It also checks
 `metadata.json`, the icon files and that the compiled translations match the
-`.po` files. The scripts live in [`ci/`](ci) and run locally too:
+`.po` files. On pull requests it also checks that every commit is signed off
+(DCO) and that every file has licence information
+([REUSE](https://reuse.software/)). The scripts live in [`ci/`](ci) and run
+locally too:
 
 ```sh
 python3 ci/check-package.py      # metadata, layout, icon
 sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
 sh ci/build-plasmoid.sh          # writes dist/rssreader-<version>.plasmoid
+reuse lint                       # licence headers (pipx run reuse lint)
 ```
 
 To publish a release, push a tag that matches `Version` in `metadata.json`,
@@ -125,6 +129,7 @@ metadata.json          Widget metadata (id, version, name/description translatio
 contents/ui/           QML: main.qml (widget), configGeneral.qml (settings page)
 contents/config/       Configuration schema and settings pages
 contents/icons/        Widget icon
+docs/                  Decisions, roadmap, architecture, glossary, threat model, third-party list
 docs/branding/         Publisher logo (SerpentSoftware), not part of the widget
 contents/locale/       Compiled translations (.mo), bundled with the widget
 translate/             Translation sources (.po/.pot) and helper scripts
@@ -135,7 +140,10 @@ ci/                    Checks and packaging used by the GitHub Actions workflows
 
 Bug reports, feature ideas and pull requests are welcome on
 [GitHub](https://github.com/Vondor/Simple-RSS-Atom-Plasma-Feed/issues).
-New translations are especially appreciated.
+New translations are especially appreciated. Please read
+[CONTRIBUTING.md](CONTRIBUTING.md) first; the project's rules for every
+contributor, human or AI, are in [AGENTS.md](AGENTS.md), and its decisions in
+[docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Credits
 
@@ -160,7 +168,10 @@ Copyright © 2026 Fabian Drywa
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
-version (`GPL-3.0-or-later`). See [LICENSE](LICENSE) for the full text.
+version (`GPL-3.0-or-later`). See [LICENSE](LICENSE) for the full text. Each
+source file names its licence in an SPDX header; [REUSE.toml](REUSE.toml)
+covers the files that cannot carry one, and [LICENSES/](LICENSES/) holds every
+licence text.
 
 The SerpentSoftware logo in `docs/branding/` is the publisher's brand mark and
 is not covered by the GPL (`LicenseRef-SerpentSoftware-Logo`, see

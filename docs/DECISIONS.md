@@ -1,0 +1,27 @@
+# Decisions
+
+One row per decision. Numbers are handed out by the coordinator and never reused. Rephrase the owner's words; attribute by question number, and say who decided (the owner, or the AI by tool and model). Rows D-001 to D-007 record decisions made before this log existed (2026-06 to 2026-10).
+
+**Reserved rows.** Every handed-out number exists here as a `Reserved` row (written by the first PR of a Sprint or phase, plus a spare block for fix agents). A PR replaces its own row and never appends at the end, so parallel PRs do not conflict.
+
+| ID | Date | Decision | Why | Source (Q-n / PR) |
+|---|---|---|---|---|
+| D-001 | 2026-06-19 | Name "Simple RSS / Atom Plasma Feed", shown as "RSS Feed Plasmoid", package id `org.kde.plasma.rssreader`. Decided by the owner. | Existing installs depend on the id. | initial commit |
+| D-002 | 2026-10-24 | Licence GPL-3.0-or-later, full text in `LICENSE`. Decided by the owner. | Free software, compatible with KDE. | PR #1 |
+| D-003 | 2026-07-11 | The widget works out of the box on a stock Plasma 6 desktop (bare Kubuntu, Debian, Fedora) with no extra packages; CI tests the built `.plasmoid` in stock distribution containers. Decided by the owner. | Users install from the KDE Store and expect it to just work. | v1.5, PR #3 |
+| D-004 | 2026-07 | Settings are per widget instance, through `QtCore` `Settings` with category `SimpleRSSFeed_<Plasmoid.id>`. Decided by the owner. | `Plasmoid.configuration` mixed values between instances. | v1.5 |
+| D-005 | 2026-10-25 | The homepage is the KDE Store page https://store.kde.org/p/2363221; serpentsoftware.de is never a homepage. Decided by the owner. | That domain hosts no project pages. | PR #6 |
+| D-006 | 2026-10-25 | The SerpentSoftware logo is a publisher mark in `docs/branding/`, under `LicenseRef-SerpentSoftware-Logo`; the widget keeps its own icon `rssreader.svg`. Decided by the owner. | Brand rules in Agent-Teams `branding/`. | PR #4 |
+| D-007 | 2026-10-25 | Agents do not merge pull requests in this repository unless the owner allows it for that pull request or records a general permission in `AGENTS.md`. Decided by the owner. | Releases reach every KDE Store user. | PR #5 |
+| D-008 | 2026-11-18 | Every commit is signed off under the DCO; agents sign off in the owner's identity (Fabian Drywa) as committer, as in the owner's other products. CI checks it on pull requests. Decided by the owner. | Part of the team's product standard. | Q-001 |
+| D-009 | Reserved | spare number: the coordinator hands it out; the PR that records the decision replaces this row | | |
+| D-010 | Reserved | spare number | | |
+
+# Open questions
+
+| ID | Asked by | Question | Options (R = recommended) | Kind (1 or 2) | Answer |
+|---|---|---|---|---|---|
+| Q-001 | Claude (Opus 5.5), 2026-11-18 | Do agents sign off their commits in the owner's identity under the DCO, as in the owner's other products? | R: yes, as the owner; or no DCO for this repository (drop the check) | 1 | yes, sign off as the owner (D-008) |
+| Q-002 | Claude (Opus 5.5), 2026-11-18 | Which release stage is the widget in? It is public on the KDE Store at 1.6.1. | R: Gold (only the owner declares it); or Beta | 1 | open |
+| Q-003 | Claude (Opus 5.5), 2026-11-18 | Which licence covers the documentation? Until answered it is the code's GPL-3.0-or-later (`REUSE.toml`). | R: keep GPL-3.0-or-later; or CC-BY-SA-4.0 | 1 | open |
+| Q-004 | Reserved | spare number | | | |

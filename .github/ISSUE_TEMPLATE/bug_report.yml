@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work as expected.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead. Never include real personal data; if a feed URL is needed, use a public one.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Widget version
+      description: Shown in the widget's "About" page, or `Version` in metadata.json.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Distribution and Plasma version
+      description: For example "Kubuntu 26.04, Plasma 6.6".
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log output (optional)
+      description: Lines with "rssreader" from `journalctl --user -b | grep -i rssreader`.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: made-by
+    attributes:
+      label: "If an AI wrote this issue: tool and model"
+      description: 'Leave empty if you wrote it yourself. Otherwise name the tool and the model, for example "Example Assistant (model-name 1.2)". Issues from the project''s outside AI reviewers also get the label `outside-review` (AGENTS.md 7.4).'
+    validations:
+      required: false
