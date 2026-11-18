@@ -93,7 +93,7 @@ jobs:
         id: build
         run: echo "file=$(sh ci/build-plasmoid.sh)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: plasmoid
           path: ${{ steps.build.outputs.file }}
@@ -122,7 +122,7 @@ jobs:
       # is the .plasmoid built above, exactly as users download it.
       - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: plasmoid
           path: dist
