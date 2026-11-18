@@ -237,6 +237,7 @@ PlasmoidItem {
 
             PlasmaComponents.Label {
                 text: root.currentTitle
+                textFormat: Text.PlainText
                 visible: text !== ""
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.4
                 font.weight: Font.Bold
@@ -305,7 +306,8 @@ PlasmoidItem {
                     id: delegateItem
                     width: listView.width
                     height: delegateColumn.implicitHeight + (Kirigami.Units.mediumSpacing * 2)
-                    onClicked: if (model.link)
+                    // Feed links are untrusted: open only web addresses, never file:, javascript: or app schemes.
+                    onClicked: if (/^https?:\/\//i.test(model.link))
                         Qt.openUrlExternally(model.link)
 
                     ColumnLayout {
@@ -318,12 +320,14 @@ PlasmoidItem {
 
                         PlasmaComponents.Label {
                             text: model.title
+                            textFormat: Text.PlainText
                             font.weight: Font.Bold
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
                         PlasmaComponents.Label {
                             text: model.source + " - " + model.date
+                            textFormat: Text.PlainText
                             font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85
                             opacity: 0.65
                             Layout.fillWidth: true
