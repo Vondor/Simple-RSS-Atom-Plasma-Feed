@@ -15,6 +15,14 @@ PlasmoidItem {
 
     property string lastUpdatedText: i18n("Never")
     property var allArticlesRaw: []
+    // Articles of the last good refresh per feed address, kept in memory only
+    // (no cache on disk), so a feed that fails keeps its articles (D-019).
+    property var keptArticles: ({})
+    // Feeds that failed in the last refresh: [{url, error}].
+    property var failedFeeds: []
+    property int feedCount: 0
+    // True when no feed answered in the last refresh.
+    property bool allFeedsFailed: false
     property string searchQuery: ""
     property int currentFetchId: 0 // Prevents older network requests from overwriting newer ones
     property bool initializing: false  // blocks Connections writes during startup restore
@@ -201,10 +209,42 @@ PlasmoidItem {
             }
 
             PlasmaComponents.Label {
-                text: i18n("Last Updated: %1", lastUpdatedText)
+                text: {
+                    if (!root.allFeedsFailed)
+                        return i18n("Last Updated: %1", root.lastUpdatedText);
+                    // Nothing answered: keep the old time and say so honestly.
+                    return root.allArticlesRaw.length > 0 ? i18n("No feed could be loaded. Showing articles from %1.", root.lastUpdatedText) : i18n("No feed could be loaded.");
+                }
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.8
                 opacity: 0.6
+                wrapMode: Text.WordWrap
                 Layout.fillWidth: true
+            }
+
+            // Names the feeds that failed, with the reason, in a tooltip.
+            PlasmaComponents.Label {
+                id: failedLabel
+                readonly property string details: {
+                    var lines = [];
+                    for (var i = 0; i < root.failedFeeds.length; i++)
+                        lines.push(root.failedFeeds[i].error);
+                    lines.push(i18n("Check the address in the settings, or wait for the next update."));
+                    return lines.join("\n");
+                }
+                text: i18np("%1 of %2 feeds could not be loaded.", "%1 of %2 feeds could not be loaded.", root.failedFeeds.length, root.feedCount)
+                textFormat: Text.PlainText
+                visible: root.failedFeeds.length > 0
+                font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.8
+                color: Kirigami.Theme.neutralTextColor
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Accessible.description: details
+
+                HoverHandler {
+                    id: failedHover
+                }
+                QQC2.ToolTip.visible: failedHover.hovered
+                QQC2.ToolTip.text: details
             }
         }
 
@@ -275,6 +315,16 @@ PlasmoidItem {
         }
     }
 
+    // Forgets every article and failure, for when no feed is configured.
+    function clearArticles() {
+        articlesModel.clear();
+        allArticlesRaw = [];
+        keptArticles = {};
+        failedFeeds = [];
+        feedCount = 0;
+        allFeedsFailed = false;
+    }
+
     function fetchFeeds() {
         var jsonStr = "";
         try {
@@ -286,8 +336,7 @@ PlasmoidItem {
 
         if (!jsonStr || jsonStr.trim() === "") {
             lastUpdatedText = i18n("No sources configured");
-            articlesModel.clear();
-            allArticlesRaw = [];
+            clearArticles();
             return;
         }
 
@@ -303,44 +352,58 @@ PlasmoidItem {
 
         if (sources.length === 0) {
             lastUpdatedText = i18n("No sources configured");
-            articlesModel.clear();
-            allArticlesRaw = [];
+            clearArticles();
+            return;
+        }
+
+        // Each address once; empty lines are skipped.
+        var urls = [];
+        for (var s = 0; s < sources.length; s++) {
+            if (sources[s] && sources[s].trim() !== "" && urls.indexOf(sources[s]) < 0)
+                urls.push(sources[s]);
+        }
+        if (urls.length === 0) {
+            lastUpdatedText = i18n("No sources configured");
+            clearArticles();
             return;
         }
 
         // Increment fetch ID for this specific batch request transaction
         var fetchId = ++root.currentFetchId;
         var completedRequests = 0;
-        var fetchedArticles = [];
+        var results = {}; // url -> {articles} or {error}
 
         function checkCompletion() {
             // Drop execution if a newer update cycle has taken over
             if (fetchId !== root.currentFetchId)
                 return;
 
-            if (completedRequests === sources.length) {
-                allArticlesRaw = FeedParser.mergeArticles(fetchedArticles, myExcludes);
+            if (completedRequests === urls.length) {
+                var combined = FeedParser.combineResults(urls, results, root.keptArticles);
+                keptArticles = combined.kept;
+                failedFeeds = combined.failed;
+                feedCount = urls.length;
+                allFeedsFailed = combined.answered === 0;
+                allArticlesRaw = FeedParser.mergeArticles(combined.articles, myExcludes);
                 filterArticles();
 
-                lastUpdatedText = FeedParser.formatTime(new Date());
+                // "Last Updated" moves only when at least one feed answered.
+                if (combined.answered > 0)
+                    lastUpdatedText = FeedParser.formatTime(new Date());
             }
         }
 
-        sources.forEach(function (url) {
-            if (!url || url.trim() === "") {
-                completedRequests++;
-                checkCompletion();
-                return;
-            }
-
+        urls.forEach(function (url) {
             var finished = false;
             var timeoutTimer = null;
             var xhr = null;
 
-            function finishOnce() {
+            // result: {articles} when the feed answered, {error} when not.
+            function finishOnce(result) {
                 if (finished)
                     return;
                 finished = true;
+                results[url] = result;
                 if (timeoutTimer) {
                     timeoutTimer.stop();
                     timeoutTimer.destroy();
@@ -359,28 +422,45 @@ PlasmoidItem {
                             xhr.abort();
                         } catch (e) {}
                     }
-                    finishOnce();
+                    finishOnce({
+                        error: i18n("%1: no answer within 15 seconds", url)
+                    });
                 });
 
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
                         if (fetchId !== root.currentFetchId) {
-                            finishOnce();
+                            finishOnce({});
                             return;
                         } // Drop stale response early
                         if (xhr.status === 200) {
                             var parsed = FeedParser.parseFeed(xhr.responseText, url, i18n("No Title"));
-                            for (var p = 0; p < parsed.length; p++)
-                                fetchedArticles.push(parsed[p]);
+                            if (parsed.length > 0 || FeedParser.isFeedText(xhr.responseText))
+                                finishOnce({
+                                    articles: parsed
+                                });
+                            else
+                                finishOnce({
+                                    error: i18n("%1: this address is not an RSS or Atom feed", url)
+                                });
+                        } else if (xhr.status === 0) {
+                            finishOnce({
+                                error: i18n("%1: could not connect", url)
+                            });
+                        } else {
+                            finishOnce({
+                                error: i18n("%1: the server answered with error %2", url, xhr.status)
+                            });
                         }
-                        finishOnce();
                     }
                 };
                 xhr.open("GET", url, true);
                 xhr.send();
                 timeoutTimer.start();
             } catch (e) {
-                finishOnce();
+                finishOnce({
+                    error: i18n("%1: could not connect", url)
+                });
             }
         });
     }

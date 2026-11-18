@@ -293,6 +293,38 @@ case("null document", "parseFeed", [None, "u", "NT"], [])
 case("broken document (unclosed item)", "parseFeed", ["<rss><channel><title>T</title><item><title>x", "u", "NT"], [])
 case("not a feed (HTML page)", "parseFeed", ["<html><head><title>Hi</title></head><body>no</body></html>", "u", "NT"], [])
 
+case("feed check: RSS 2.0", "isFeedText", [RSS2], True)
+case("feed check: Atom", "isFeedText", [ATOM], True)
+case("feed check: RSS 1.0", "isFeedText", [RSS1], True)
+case("feed check: empty feed is still a feed", "isFeedText", ["<rss><channel><title>T</title></channel></rss>"], True)
+case("feed check: HTML page is not a feed", "isFeedText", ["<html><head><title>Login</title></head></html>"], False)
+case("feed check: nothing", "isFeedText", [None], False)
+
+# Combining one refresh with the articles kept before (#32, D-019)
+OLD_A = [art("Old A", "Feed A", 1, "https://example.org/oa")]
+OLD_B = [art("Old B", "Feed B", 2, "https://example.org/ob")]
+NEW_A = [art("New A", "Feed A", 3, "https://example.org/na")]
+URLS = ["https://a.example/feed", "https://b.example/feed"]
+PREV = {URLS[0]: OLD_A, URLS[1]: OLD_B}
+case("combine: all answered replaces the old articles", "combineResults",
+     [URLS, {URLS[0]: {"articles": NEW_A}, URLS[1]: {"articles": []}}, PREV],
+     lambda r: [a["title"] for a in r["articles"]] == ["New A"] and r["failed"] == [] and r["answered"] == 2)
+case("combine: a failed feed keeps its old articles", "combineResults",
+     [URLS, {URLS[0]: {"articles": NEW_A}, URLS[1]: {"error": "b: timeout"}}, PREV],
+     lambda r: [a["title"] for a in r["articles"]] == ["New A", "Old B"] and r["failed"] == [{"url": URLS[1], "error": "b: timeout"}]
+     and r["answered"] == 1 and r["kept"][URLS[1]][0]["title"] == "Old B")
+case("combine: all failed keeps everything", "combineResults",
+     [URLS, {URLS[0]: {"error": "x"}, URLS[1]: {"error": "y"}}, PREV],
+     lambda r: sorted(a["title"] for a in r["articles"]) == ["Old A", "Old B"] and r["answered"] == 0 and len(r["failed"]) == 2)
+case("combine: a failed feed never loaded before adds nothing", "combineResults",
+     [URLS, {URLS[0]: {"articles": NEW_A}, URLS[1]: {"error": "y"}}, {}],
+     lambda r: [a["title"] for a in r["articles"]] == ["New A"] and URLS[1] not in r["kept"])
+case("combine: a removed feed is forgotten", "combineResults",
+     [[URLS[0]], {URLS[0]: {"error": "x"}}, PREV],
+     lambda r: list(r["kept"].keys()) == [URLS[0]] and [a["title"] for a in r["articles"]] == ["Old A"])
+case("combine: a missing result counts as failed", "combineResults", [URLS, {}, None],
+     lambda r: r["articles"] == [] and r["answered"] == 0 and len(r["failed"]) == 2)
+
 # Building the list: blacklist, duplicates, order
 A = [art("Old news", "Feed A", 100, "https://example.org/old"),
      art("New SPONSORED post", "Feed A", 300, "https://example.org/ad"),

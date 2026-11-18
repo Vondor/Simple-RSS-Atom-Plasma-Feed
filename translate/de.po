@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-08-20 19:11+0000\n"
+"POT-Creation-Date: 2026-11-18 10:37+0000\n"
 "PO-Revision-Date: 2026-07-23 13:15+0000\n"
 "Last-Translator: Fabian Drywa <dev@serpentsoftware.de>\n"
 "Language-Team: German\n"
@@ -82,6 +82,24 @@ msgid "Last Updated: %1"
 msgstr "Zuletzt aktualisiert: %1"
 
 #: contents/ui/main.qml
+msgid "No feed could be loaded. Showing articles from %1."
+msgstr "Kein Feed konnte geladen werden. Angezeigt werden die Artikel von %1."
+
+#: contents/ui/main.qml
+msgid "No feed could be loaded."
+msgstr "Kein Feed konnte geladen werden."
+
+#: contents/ui/main.qml
+msgid "Check the address in the settings, or wait for the next update."
+msgstr "Prüfe die Adresse in den Einstellungen oder warte auf die nächste Aktualisierung."
+
+#: contents/ui/main.qml
+msgid "%1 of %2 feeds could not be loaded."
+msgid_plural "%1 of %2 feeds could not be loaded."
+msgstr[0] "%1 von %2 Feeds konnte nicht geladen werden."
+msgstr[1] "%1 von %2 Feeds konnten nicht geladen werden."
+
+#: contents/ui/main.qml
 msgid "No articles match your filter."
 msgstr "Keine Artikel entsprechen dem Filter."
 
@@ -102,8 +120,24 @@ msgid "JSON Parse Error"
 msgstr "Fehler beim Auswerten der JSON-Daten"
 
 #: contents/ui/main.qml
+msgid "%1: no answer within 15 seconds"
+msgstr "%1: keine Antwort innerhalb von 15 Sekunden"
+
+#: contents/ui/main.qml
 msgid "No Title"
 msgstr "Ohne Titel"
+
+#: contents/ui/main.qml
+msgid "%1: this address is not an RSS or Atom feed"
+msgstr "%1: diese Adresse ist kein RSS- oder Atom-Feed"
+
+#: contents/ui/main.qml
+msgid "%1: could not connect"
+msgstr "%1: keine Verbindung möglich"
+
+#: contents/ui/main.qml
+msgid "%1: the server answered with error %2"
+msgstr "%1: der Server antwortete mit Fehler %2"
 
 #. i18n: Widget name, shown in the "Add Widgets" browser and the KDE Store.
 #: translate/metadata-strings.h
