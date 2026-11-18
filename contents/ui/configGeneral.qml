@@ -25,6 +25,15 @@ Item {
     property string cfg_sourcesJson: ""
     property string cfg_excludeRegexJson: ""
 
+    // Plasma's settings dialog also hands every page a cfg_<key>Default value
+    // for each entry in main.xml, and logs a warning for each one the page
+    // does not declare. The page does not use them; they exist so the dialog
+    // opens without warnings.
+    property int cfg_refreshTimeDefault
+    property string cfg_customTitleDefault
+    property string cfg_sourcesJsonDefault
+    property string cfg_excludeRegexJsonDefault
+
     // Shared width for every row label: sized to whichever translated label
     // text is longest, so the label column lines up no matter the locale.
     // Re-evaluates automatically whenever any label's text/font changes.
