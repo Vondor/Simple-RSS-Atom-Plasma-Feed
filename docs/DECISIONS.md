@@ -17,7 +17,7 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | D-009 | 2026-11-18 | The widget is in release stage Gold. Decided by the owner. | It is public on the KDE Store at 1.6.1. | Q-002 |
 | D-010 | 2026-11-18 | The documentation is licensed like the code, GPL-3.0-or-later (`REUSE.toml`). Decided by the owner. | One licence for the whole project. | Q-003 |
 | D-011 | 2026-11-18 | QML code style is whatever `qmlformat` from Qt 6.12 writes (default settings); CI job "Lint" (`ci/lint.sh`) checks it together with whitespace, JSON/XML parsing, shellcheck and Python syntax. `sh ci/lint.sh --fix` reformats. Decided by the AI (Claude Code, Claude Opus 5.5), pending the owner's review in the PR. | The owner asked for a check that the code format is valid; qmlformat is Qt's own formatter and needs nothing in the widget. Pinned because its output changes between Qt versions. | this PR |
-| D-012 | Reserved | spare number | | |
+| D-012 | 2026-11-18 | Versions are numbered `1.YYMMDD.N` like the owner's other product (KassenSturz D-152, there `0.YYMMDD.N` before its 1.0): release date in UTC, then a counter from 0 for further releases that day, no leading zeros; the major stays 1 because 1.6.1 is already public. `Version` in `metadata.json` is bumped by hand only in a release pull request (`ci/next-version.sh` prints the number); the tag is `v<Version>`. A tag builds `SimpleRSSFeed-<version with dashes>.plasmoid` and `.tar.gz` (source) and attaches them to a GitHub release for the KDE Store upload. Proposed by Claude (Opus 5.5); takes effect when the owner merges. | The owner asked for KassenSturz's numbering and these file names; date numbers stay higher than 1.6.1, so updates are seen. | Q-004 |
 
 # Open questions
 
@@ -26,4 +26,4 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | Q-001 | Claude (Opus 5.5), 2026-11-18 | Do agents sign off their commits in the owner's identity under the DCO, as in the owner's other products? | R: yes, as the owner; or no DCO for this repository (drop the check) | 1 | yes, sign off as the owner (D-008) |
 | Q-002 | Claude (Opus 5.5), 2026-11-18 | Which release stage is the widget in? It is public on the KDE Store at 1.6.1. | R: Gold (only the owner declares it); or Beta | 1 | Gold (D-009) |
 | Q-003 | Claude (Opus 5.5), 2026-11-18 | Which licence covers the documentation? Until answered it is the code's GPL-3.0-or-later (`REUSE.toml`). | R: keep GPL-3.0-or-later; or CC-BY-SA-4.0 | 1 | GPL-3.0-or-later (D-010) |
-| Q-004 | Reserved | spare number | | | |
+| Q-004 | Claude (Opus 5.5), 2026-11-18 | Which numbering after 1.6.1, now that versions follow KassenSturz's date scheme? | R: `1.YYMMDD.N` (keeps the major above 1.6.1); or `0.YYMMDD.N` exactly as KassenSturz (lower than 1.6.1, so stores would not offer it as an update) | 1 | `1.YYMMDD.N` (D-012), on merge |
