@@ -7,7 +7,7 @@
 | Standards | Repository follows the team's product standard: `AGENTS.md`, decision log, docs, templates, DCO and REUSE checks | | done |
 | Parser tests | Feed parsing in `feedparser.js`, tested in CI with synthetic feeds (D-015, #37) | | done |
 | Lints | Format and syntax lints in CI: whitespace, JSON/XML, qmlformat style (D-011), shellcheck | | done |
-| Releases | Date version numbers `1.YYMMDD.N` (D-012); a tag builds `SimpleRSSFeed-<version>.plasmoid` and `.tar.gz` for the KDE Store | | done |
+| Releases | Date version numbers `1.YYMMDD.N` (D-012), raised by every merge to `main` as a build number from git (D-025); a tag builds `SimpleRSSFeed-<version>.plasmoid` and `.tar.gz` for the KDE Store | | done |
 
 ## Steps table for the current milestone (written by step 0)
 | Step | Tier/effort | Needs | Side by side with | Files |

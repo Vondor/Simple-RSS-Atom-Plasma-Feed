@@ -75,7 +75,10 @@ jobs:
     name: Package and translations
     runs-on: ubuntu-latest
     steps:
+      # Full history: the build number counts the day's merges (D-025).
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install gettext
         run: sudo apt-get update -qq && sudo apt-get install -y -q gettext

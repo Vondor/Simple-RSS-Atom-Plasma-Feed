@@ -1,11 +1,11 @@
 name: Release
 
-# Push a tag v<Version> (for example v1.261118.0) to build the two files for
-# the KDE Store and attach them to a GitHub release:
+# Push a tag v<build number> (for example v1.261118.0) to build the two files
+# for the KDE Store and attach them to a GitHub release:
 #   SimpleRSSFeed-1-261118-0.plasmoid  and  SimpleRSSFeed-1-261118-0.tar.gz
-# The tag must match "Version" in metadata.json, and Version must follow the
-# numbering 1.YYMMDD.N (D-012; ci/next-version.sh prints the next one), and
-# the tagged commit must be on main (D-023).
+# The tag must be the build number of the tagged commit (sh ci/build-version.sh
+# <commit>, D-025), which is also the version inside the .plasmoid, and the
+# tagged commit must be on main (D-023).
 on:
   push:
     tags: ["v*"]
@@ -37,15 +37,11 @@ jobs:
           python3 ci/check-package.py
           sh ci/check-translations.sh
 
-      - name: Check tag matches metadata.json and the numbering
+      - name: Check tag is the build number of the tagged commit
         run: |
-          version=$(python3 -c 'import json; print(json.load(open("metadata.json"))["KPlugin"]["Version"])')
+          version=$(sh ci/build-version.sh "${GITHUB_SHA}")
           if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match metadata.json Version ${version} (expected v${version})"
-            exit 1
-          fi
-          if ! echo "${version}" | grep -Eq '^1\.[0-9]{6}\.(0|[1-9][0-9]*)$'; then
-            echo "::error::Version ${version} is not 1.YYMMDD.N (D-012); run sh ci/next-version.sh"
+            echo "::error::Tag ${GITHUB_REF_NAME} is not the build number of its commit (expected v${version}, from sh ci/build-version.sh)"
             exit 1
           fi
 
