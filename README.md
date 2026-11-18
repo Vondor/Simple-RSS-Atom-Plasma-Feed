@@ -137,7 +137,8 @@ To publish a release:
 3. Tag the merged commit and push the tag, for example
    `git tag -a v1.261118.0 -m "Release 1.261118.0" && git push origin v1.261118.0`.
 
-The release workflow checks that the tag matches `Version`, then attaches
+The release workflow checks that the tag matches `Version` and that the tagged
+commit is on `main`, then attaches
 `SimpleRSSFeed-1-261118-0.plasmoid` and `SimpleRSSFeed-1-261118-0.tar.gz`
 (the source) to a GitHub release. Download both from the release page and
 upload them to the [KDE Store](https://store.kde.org/p/2363221).
@@ -172,7 +173,8 @@ contributor, human or AI, are in [AGENTS.md](AGENTS.md), and its decisions in
 
 Made by Fabian Drywa ([dev@serpentsoftware.de](mailto:dev@serpentsoftware.de)).
 The code was created with the help of Gemini AI and refined with Claude AI;
-the design and translations are by humans.
+the design and the German translation are by a human. The Klingon and Quenya
+translations are made by AI until a speaker reviews them.
 
 ## Publisher
 
