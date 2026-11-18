@@ -62,8 +62,9 @@ Item {
     }
 
     // Populate feeds list when cfg_sourcesJson is set on dialog open.
-    // Accepts plain JSON array only — the SQLite layer in main.qml owns the
-    // canonical data; Plasmoid.configuration is just a staging area for the dialog.
+    // Accepts plain JSON array only — main.qml's per-instance Settings own the
+    // canonical data (and convert older formats on startup);
+    // Plasmoid.configuration is just a staging area for the dialog.
     onCfg_sourcesJsonChanged: {
         if (!page.feedsLoaded && cfg_sourcesJson) {
             page.feedsLoaded = true;
@@ -98,7 +99,7 @@ Item {
     }
 
     // Write plain JSON arrays. main.qml's Connections handler picks these up,
-    // saves them to SQLite under this instance's Plasmoid.id, and refreshes feeds.
+    // saves them to Settings under this instance's Plasmoid.id, and refreshes feeds.
     // NOTE: Plasmoid is intentionally NOT referenced here — it is not available
     //       in config pages in Plasma 6.
     //

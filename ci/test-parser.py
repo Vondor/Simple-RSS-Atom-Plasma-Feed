@@ -151,6 +151,18 @@ case("sources: v2 object, other instance only", "parseSources", ['{"v":2,"instan
 case("sources: unknown object", "parseSources", ['{"foo":1}', 7], [])
 case("sources: JSON null", "parseSources", ["null", 7], [])
 case("sources: invalid JSON", "parseSources", ["[not json", 7], None)
+# Older formats are rewritten as the plain list the settings page reads (#34).
+case("plain sources: plain array is kept as written", "plainSourcesJson", ['[ "https://example.org/feed" ]', 7], '[ "https://example.org/feed" ]')
+case("plain sources: v1 object", "plainSourcesJson", ['{"v":1,"sources":["https://example.org/a"]}', 7], '["https://example.org/a"]')
+case("plain sources: v2 object, this instance only", "plainSourcesJson",
+     ['{"v":2,"instances":{"7":{"sources":["https://example.org/7"]},"8":{"sources":["https://example.org/8"]}}}', 7],
+     '["https://example.org/7"]')
+case("plain sources: invalid JSON is left alone", "plainSourcesJson", ["[not json", 7], "[not json")
+# A new widget does not take over what a removed widget stored under its id (D-022).
+case("stored settings: widget that stays", "restoresStoredSettings", [True, False], True)
+case("stored settings: written before the removed mark existed", "restoresStoredSettings", [True, None], True)
+case("stored settings: removed widget's id reused", "restoresStoredSettings", [True, True], False)
+case("stored settings: first start", "restoresStoredSettings", [False, False], False)
 case("excludes: list", "parseExcludes", ['["ad", "sponsored"]'], ["ad", "sponsored"])
 case("excludes: empty text", "parseExcludes", [""], [])
 case("excludes: invalid JSON", "parseExcludes", ["{oops"], [])
