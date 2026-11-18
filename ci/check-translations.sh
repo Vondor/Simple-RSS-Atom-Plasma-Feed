@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Rebuilds the translations in a scratch copy and fails if the committed files
 # are stale: template.pot missing new i18n() strings, .mo files not rebuilt
 # after a .po edit, or metadata.json Name[xx]/Description[xx] out of sync.

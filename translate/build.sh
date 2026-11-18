@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fabian Drywa <dev@serpentsoftware.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Compiles every *.po into contents/locale/<lang>/LC_MESSAGES/plasma_applet_<Id>.mo
 # so the translations travel inside the .plasmoid file, and writes the translated
 # Name[xx]/Description[xx] keys back into metadata.json (the widget browser reads
