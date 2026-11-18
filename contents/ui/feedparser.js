@@ -375,6 +375,53 @@ function mergeArticles(articles, excludePatterns) {
     return dedupedArticles;
 }
 
+// Whether a document is an RSS or Atom feed at all, so a page that answers
+// with HTML (a login page, an error page) is reported instead of being taken
+// for a feed without articles.
+function isFeedText(xmlText) {
+    return /<(rss|feed|rdf:RDF)\b/.test(xmlText || "");
+}
+
+// Combines one refresh with the articles kept from earlier refreshes, so a
+// feed that fails keeps showing what it showed before (issue #32, D-019).
+// urls: the configured addresses. results: {url: {articles: [...]}} for a feed
+// that answered, {url: {error: "text"}} for one that failed. previous: the
+// articles kept per address by the last refresh ({url: [...]}), in memory only.
+// Returns {kept, articles, failed: [{url, error}], answered}; kept holds only
+// the configured addresses, so a removed feed's articles are forgotten.
+function combineResults(urls, results, previous) {
+    var before = previous || {};
+    var kept = {};
+    var articles = [];
+    var failed = [];
+    var answered = 0;
+    for (var i = 0; i < urls.length; i++) {
+        var url = urls[i];
+        var result = results[url] || {
+            error: ""
+        };
+        if (result.articles) {
+            answered++;
+            kept[url] = result.articles;
+        } else {
+            failed.push({
+                url: url,
+                error: result.error || ""
+            });
+            if (before[url])
+                kept[url] = before[url];
+        }
+        if (kept[url])
+            articles = articles.concat(kept[url]);
+    }
+    return {
+        kept: kept,
+        articles: articles,
+        failed: failed,
+        answered: answered
+    };
+}
+
 // The articles matching the search box: a case-insensitive regular expression
 // on title or source. An empty query matches all; an invalid one matches none.
 function filterArticles(articles, query) {
