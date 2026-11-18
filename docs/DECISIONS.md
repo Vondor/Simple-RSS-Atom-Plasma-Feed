@@ -18,6 +18,17 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | D-010 | 2026-11-18 | The documentation is licensed like the code, GPL-3.0-or-later (`REUSE.toml`). Decided by the owner. | One licence for the whole project. | Q-003 |
 | D-011 | 2026-11-18 | QML code style is whatever `qmlformat` from Qt 6.12 writes (default settings); CI job "Lint" (`ci/lint.sh`) checks it together with whitespace, JSON/XML parsing, shellcheck and Python syntax. `sh ci/lint.sh --fix` reformats. Decided by the AI (Claude Code, Claude Opus 5.5), pending the owner's review in the PR. | The owner asked for a check that the code format is valid; qmlformat is Qt's own formatter and needs nothing in the widget. Pinned because its output changes between Qt versions. | this PR |
 | D-012 | 2026-11-18 | Versions are numbered `1.YYMMDD.N` like the owner's other product (KassenSturz D-152, there `0.YYMMDD.N` before its 1.0): release date in UTC, then a counter from 0 for further releases that day, no leading zeros; the major stays 1 because 1.6.1 is already public. `Version` in `metadata.json` is bumped by hand only in a release pull request (`ci/next-version.sh` prints the number); the tag is `v<Version>`. A tag builds `SimpleRSSFeed-<version with dashes>.plasmoid` and `.tar.gz` (source) and attaches them to a GitHub release for the KDE Store upload. Proposed by Claude (Opus 5.5); takes effect when the owner merges. | The owner asked for KassenSturz's numbering and these file names; date numbers stay higher than 1.6.1, so updates are seen. | Q-004 |
+| D-013 | 2026-11-18 | Agents may merge a pull request in this repository when its CI is green and no other human gate in `AGENTS.md` 3.2 is ticked on it. Releases, version numbers, KDE Store publishing and any other gated pull request wait for the owner. Decided by the owner (general permission, recorded in `AGENTS.md` 3.2; it is the permission D-007 asks for). | Keeps the one-step-at-a-time fix queue moving while the owner's gates stay with the owner. | this PR |
+| D-014 | | Reserved: step 1, issues #8 and #29 (only allow safe link schemes before opening a link). | | `docs/ROADMAP.md` steps table |
+| D-015 | | Reserved: step 2, issue #37 (parser tests in CI; CI change, owner gate). | | `docs/ROADMAP.md` steps table |
+| D-016 | | Reserved: step 3, issue #30 (entities, CDATA, emoji and Atom `href` parsing). | | `docs/ROADMAP.md` steps table |
+| D-017 | | Reserved: step 4, issue #31 (date formats such as PDT, UT and `dc:date`). | | `docs/ROADMAP.md` steps table |
+| D-018 | | Reserved: step 5, issue #33 (size limits for large feeds; limits only). | | `docs/ROADMAP.md` steps table |
+| D-019 | | Reserved: step 6, issue #32 (a failed refresh must not empty the list). | | `docs/ROADMAP.md` steps table |
+| D-020 | | Reserved: step 7, issue #35 (search and settings on first use; German description fix). | | `docs/ROADMAP.md` steps table |
+| D-021 | | Reserved: step 8, issue #36 (accessibility). | | `docs/ROADMAP.md` steps table |
+| D-022 | | Reserved: step 9, issue #34 (a new widget reusing a `Plasmoid.id` must not inherit removed settings; settings storage, owner gate). | | `docs/ROADMAP.md` steps table |
+| D-023 | | Reserved: step 10, issue #38 (cleanups; docs any time, workflow after step 9). | | `docs/ROADMAP.md` steps table |
 
 # Open questions
 

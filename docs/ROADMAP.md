@@ -11,6 +11,17 @@
 ## Steps table for the current milestone (written by step 0)
 | Step | Tier/effort | Needs | Side by side with | Files |
 |---|---|---|---|---|
+| 0: reserve decision rows, record the merge permission (D-013) | low | Owner merges this PR (it touches `AGENTS.md` 3.2) | none | `docs/DECISIONS.md`, `docs/ROADMAP.md`, `AGENTS.md` |
+| 1: issues #8 and #29, link schemes (D-014) | medium | none | none | per issue |
+| 2: issue #37, parser tests in CI (D-015) | high | Owner approval, CI change | after 1 | per issue |
+| 3: issue #30, parser entities and CDATA (D-016) | high | none | after 2 | per issue |
+| 4: issue #31, date formats (D-017) | high | none | after 3 | per issue |
+| 5: issue #33, size limits for large feeds (D-018) | medium | none | after 4 | per issue |
+| 6: issue #32, failed refresh keeps the list (D-019) | medium | none | after 5 | per issue |
+| 7: issue #35, search and settings on first use (D-020) | high | none | after 6 | per issue |
+| 8: issue #36, accessibility (D-021) | medium | none | after 7 | per issue |
+| 9: issue #34, settings of a reused `Plasmoid.id` (D-022) | high | Owner's choice of the clear-on-removal option; settings storage, owner gate | after 8 | per issue |
+| 10: issue #38, cleanups (D-023) | low | none | docs any time; workflow after step 9 | per issue |
 
 ## User Sprints
 <!-- one block per Sprint (testers, dates), then one line per kept item with a blank line between items, so parallel steps setting their own status never touch neighbouring lines -->
