@@ -6,7 +6,7 @@
 # Meant to run as root inside a fresh debian/ubuntu/fedora container, the CI
 # counterpart of a bare-bones Kubuntu or Fedora VM.
 #
-# Usage:  sh ci/test-on-distro.sh dist/rssreader-<version>.plasmoid
+# Usage:  sh ci/test-on-distro.sh dist/SimpleRSSFeed-<version with dashes>.plasmoid
 
 set -eu
 PLASMOID="$(realpath "$1")"

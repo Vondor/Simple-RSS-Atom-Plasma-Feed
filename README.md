@@ -114,13 +114,30 @@ locally too:
 ```sh
 python3 ci/check-package.py      # metadata, layout, icon
 sh ci/check-translations.sh      # .pot/.mo/metadata.json up to date (needs gettext)
-sh ci/build-plasmoid.sh          # writes dist/rssreader-<version>.plasmoid
+sh ci/build-plasmoid.sh          # writes dist/SimpleRSSFeed-<version with dashes>.plasmoid
 reuse lint                       # licence headers (pipx run reuse lint)
 ```
 
-To publish a release, push a tag that matches `Version` in `metadata.json`,
-for example `git tag v1.6.2 && git push origin v1.6.2`. The release workflow
-attaches the built `.plasmoid` to a GitHub release, ready for the KDE Store.
+### Version numbers and releases
+
+Versions are numbered `1.YYMMDD.N`: the release date (UTC), then a counter
+from 0 for a further release on the same day, for example `1.261118.0`
+(D-012). They always go up, so the KDE Store and Plasma see every release
+as newer than 1.6.1.
+
+To publish a release:
+
+1. `git fetch --tags && sh ci/next-version.sh` prints the number to use.
+2. Write it into `Version` in `metadata.json` in a small pull request and
+   merge it.
+3. Tag the merged commit and push the tag, for example
+   `git tag -a v1.261118.0 -m "Release 1.261118.0" && git push origin v1.261118.0`.
+
+The release workflow checks that the tag matches `Version`, then attaches
+`SimpleRSSFeed-1-261118-0.plasmoid` and `SimpleRSSFeed-1-261118-0.tar.gz`
+(the source) to a GitHub release. Download both from the release page and
+upload them to the [KDE Store](https://store.kde.org/p/2363221).
+`sh ci/build-release.sh` builds the same two files locally.
 
 ### Project layout
 
