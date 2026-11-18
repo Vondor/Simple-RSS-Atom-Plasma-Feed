@@ -20,7 +20,7 @@ Success looks like this: a user installs the widget from "Get New Widgets", past
 **Conservative with the user's data, liberal with the user.** The widget stores only the user's feed URLs, filters and display options. Nothing the user configured is lost or overwritten by an update without their say-so: a change to the stored settings keeps reading the old ones. Defaults never lower protection.
 
 ### Release stages
-Work is placed in a stage, never "before or after 1.0": **Alpha** (owner and agents only, settings may change freely), **Beta** (feature set complete, no known settings-loss bug, invited testers; every settings change keeps reading the old values, with a check), **RC** (fixes only, packaging ready, settings frozen), **Gold** (only the owner declares it). Current stage: **not yet declared by the owner (Q-002).** Until then, treat it as released software: the widget is public on the KDE Store, so existing installs and their settings must keep working.
+Work is placed in a stage, never "before or after 1.0": **Alpha** (owner and agents only, settings may change freely), **Beta** (feature set complete, no known settings-loss bug, invited testers; every settings change keeps reading the old values, with a check), **RC** (fixes only, packaging ready, settings frozen), **Gold** (only the owner declares it). Current stage: **Gold** (D-009). The widget is public on the KDE Store, so existing installs and their settings must keep working.
 
 ## 2. Principles (priority order; the lower number wins a conflict)
 

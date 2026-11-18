@@ -14,14 +14,16 @@ One row per decision. Numbers are handed out by the coordinator and never reused
 | D-006 | 2026-10-25 | The SerpentSoftware logo is a publisher mark in `docs/branding/`, under `LicenseRef-SerpentSoftware-Logo`; the widget keeps its own icon `rssreader.svg`. Decided by the owner. | Brand rules in Agent-Teams `branding/`. | PR #4 |
 | D-007 | 2026-10-25 | Agents do not merge pull requests in this repository unless the owner allows it for that pull request or records a general permission in `AGENTS.md`. Decided by the owner. | Releases reach every KDE Store user. | PR #5 |
 | D-008 | 2026-11-18 | Every commit is signed off under the DCO; agents sign off in the owner's identity (Fabian Drywa) as committer, as in the owner's other products. CI checks it on pull requests. Decided by the owner. | Part of the team's product standard. | Q-001 |
-| D-009 | Reserved | spare number: the coordinator hands it out; the PR that records the decision replaces this row | | |
-| D-010 | Reserved | spare number | | |
+| D-009 | 2026-11-18 | The widget is in release stage Gold. Decided by the owner. | It is public on the KDE Store at 1.6.1. | Q-002 |
+| D-010 | 2026-11-18 | The documentation is licensed like the code, GPL-3.0-or-later (`REUSE.toml`). Decided by the owner. | One licence for the whole project. | Q-003 |
+| D-011 | Reserved | spare number: the coordinator hands it out; the PR that records the decision replaces this row | | |
+| D-012 | Reserved | spare number | | |
 
 # Open questions
 
 | ID | Asked by | Question | Options (R = recommended) | Kind (1 or 2) | Answer |
 |---|---|---|---|---|---|
 | Q-001 | Claude (Opus 5.5), 2026-11-18 | Do agents sign off their commits in the owner's identity under the DCO, as in the owner's other products? | R: yes, as the owner; or no DCO for this repository (drop the check) | 1 | yes, sign off as the owner (D-008) |
-| Q-002 | Claude (Opus 5.5), 2026-11-18 | Which release stage is the widget in? It is public on the KDE Store at 1.6.1. | R: Gold (only the owner declares it); or Beta | 1 | open |
-| Q-003 | Claude (Opus 5.5), 2026-11-18 | Which licence covers the documentation? Until answered it is the code's GPL-3.0-or-later (`REUSE.toml`). | R: keep GPL-3.0-or-later; or CC-BY-SA-4.0 | 1 | open |
+| Q-002 | Claude (Opus 5.5), 2026-11-18 | Which release stage is the widget in? It is public on the KDE Store at 1.6.1. | R: Gold (only the owner declares it); or Beta | 1 | Gold (D-009) |
+| Q-003 | Claude (Opus 5.5), 2026-11-18 | Which licence covers the documentation? Until answered it is the code's GPL-3.0-or-later (`REUSE.toml`). | R: keep GPL-3.0-or-later; or CC-BY-SA-4.0 | 1 | GPL-3.0-or-later (D-010) |
 | Q-004 | Reserved | spare number | | | |

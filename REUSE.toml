@@ -21,8 +21,7 @@ path = [
 SPDX-FileCopyrightText = "2026 Fabian Drywa <dev@serpentsoftware.de>"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
-# Docs and configuration. Licence of the docs: the code's licence until the
-# owner decides otherwise (docs/DECISIONS.md, Q-003).
+# Docs and configuration, under the code's licence (docs/DECISIONS.md, D-010).
 [[annotations]]
 path = ["**.md", ".github/**", ".gitignore", "REUSE.toml", "docs/*.md"]
 SPDX-FileCopyrightText = "2026 Fabian Drywa <dev@serpentsoftware.de>"
