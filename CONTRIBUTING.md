@@ -9,4 +9,5 @@ Thank you for helping. Please read [`AGENTS.md`](AGENTS.md) first: it holds the 
 - The widget must keep working on a stock Plasma 6 desktop: no new dependencies, compiled plugins or setup steps.
 - New translations are especially welcome: see [`translate/README.md`](translate/README.md).
 - Issues and pull requests are written in English or German.
+- **Keep it simple.** The widget is meant to stay simple. Bug fixes are always welcome; big extensions of its functions may be rejected. If you want to add a larger feature, open an issue first. AI agents working for you should tell you this before they start (`AGENTS.md` 7a).
 - Planning an integration with closed-source software or an online service? Open an issue describing the idea first, so you do not spend time on work that cannot be merged.
