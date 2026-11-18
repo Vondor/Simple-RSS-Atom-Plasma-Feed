@@ -17,7 +17,7 @@ A Plasma 6 KPackage (`Plasma/Applet`) of plain QML. `main.qml` reads the instanc
 | `ci/` | package checks, format lints (`lint.sh`), feed parser cases (`test-parser.py`, D-015), translation check, `.plasmoid` build, stock-distro install test | Python 3, zip, gettext, shellcheck, qmlformat and PySide6 (CI only), containers |
 
 ## Data storage
-Only the user's settings: feed URLs, blacklist patterns, title, refresh interval. They live in `QtCore` `Settings` under the category `SimpleRSSFeed_<Plasmoid.id>`, one per widget instance (D-004). Feed articles are kept in memory only and fetched again on refresh; a feed that fails keeps the articles of its last good refresh until the widget restarts (D-019). A settings change must keep reading the values an older version wrote.
+Only the user's settings: feed URLs, blacklist patterns, title, refresh interval. They live in `QtCore` `Settings` under the category `SimpleRSSFeed_<Plasmoid.id>`, one per widget instance (D-004). Feed articles are kept in memory only and fetched again on refresh; a feed that fails keeps the articles of its last good refresh until the widget restarts (D-019). A removed widget's section is marked `removed`; Undo takes the mark off and restores it, and its values are emptied once the removal is final, so a new widget with the same id starts from the defaults (D-022). A settings change must keep reading the values an older version wrote.
 
 ## Boundaries
 - Network: only the feed URLs the user configured (`AGENTS.md` 3.1.3).

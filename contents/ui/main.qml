@@ -345,7 +345,7 @@ PlasmoidItem {
                         anchors.right: parent.right
                         anchors.top: parent.top
                         anchors.margins: Kirigami.Units.mediumSpacing
-                        spacing: 4
+                        spacing: Kirigami.Units.smallSpacing
 
                         PlasmaComponents.Label {
                             text: model.title
@@ -423,7 +423,7 @@ PlasmoidItem {
         // Each address once; empty lines are skipped.
         var urls = [];
         for (var s = 0; s < sources.length; s++) {
-            if (sources[s] && sources[s].trim() !== "" && urls.indexOf(sources[s]) < 0)
+            if (typeof sources[s] === "string" && sources[s].trim() !== "" && urls.indexOf(sources[s]) < 0)
                 urls.push(sources[s]);
         }
         if (urls.length === 0) {
