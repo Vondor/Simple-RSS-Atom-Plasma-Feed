@@ -273,6 +273,20 @@ case("date: Atom <published> wins over an earlier <updated>", "parseFeed",
      ['<feed xmlns="http://www.w3.org/2005/Atom"><title>A</title><entry><title>x</title>'
       '<updated>2026-11-18T10:00:00Z</updated><published>2026-11-17T10:00:00Z</published></entry></feed>', "u", "NT"],
      field("timestamp", 1794909600000))
+# Size limits (D-018): items per feed and characters read
+def items(n):
+    return "".join("<item><title>t%d</title><link>https://example.org/%d</link></item>" % (i, i) for i in range(n))
+
+
+BIG = "<rss><channel><title>Big</title>%s</channel></rss>" % items(250)
+case("limit: default takes the first 100 items", "parseFeed", [BIG, "u", "NT"],
+     lambda r: len(r) == 100 and r[0]["title"] == "t0" and r[99]["title"] == "t99")
+case("limit: item count can be set", "parseFeed", [BIG, "u", "NT", {"maxItems": 3}], lambda r: [a["title"] for a in r] == ["t0", "t1", "t2"])
+case("limit: a feed under the limit is read whole", "parseFeed", [BIG, "u", "NT", {"maxItems": 1000}], lambda r: len(r) == 250)
+# 10 items of about 60 characters each fit into 700 characters; the item cut off by the limit is dropped
+case("limit: size cut drops the cut-off item", "parseFeed", [BIG, "u", "NT", {"maxChars": 700}],
+     lambda r: 0 < len(r) < 15 and r[-1]["title"] == "t%d" % (len(r) - 1) and r[0]["source"] == "Big")
+case("limit: size cut inside the head gives no articles", "parseFeed", [BIG, "u", "NT", {"maxChars": 20}], [])
 # Broken input never throws
 case("empty document", "parseFeed", ["", "u", "NT"], [])
 case("null document", "parseFeed", [None, "u", "NT"], [])

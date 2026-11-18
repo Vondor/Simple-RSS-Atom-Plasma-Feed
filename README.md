@@ -23,6 +23,8 @@ desktop or panel.
   widgets side by side.
 - A per-feed timeout of 15 seconds keeps one slow or dead feed from stalling
   the others.
+- Very large feeds are cut off to keep your desktop responsive: the first 100
+  articles of each feed are shown, and no more than 2 MB of a feed is read.
 - Compact (icon) view on small panels, full list at 250×250 px and above.
 - Translations: German and English, plus Klingon (`tlh`) and Quenya (`qya`)
   as easter eggs. See [`translate/README.md`](translate/README.md) to add

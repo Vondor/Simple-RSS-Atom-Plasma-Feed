@@ -229,13 +229,28 @@ function attributeText(value) {
     return decodeEntities(value || "").trim();
 }
 
+// Limits that keep one big feed from freezing plasmashell while it is parsed
+// on the interface thread (D-018). A feed is read up to MAX_FEED_CHARS
+// characters and at most MAX_ITEMS_PER_FEED articles are taken, in document
+// order: feeds list their newest articles first. About 100 articles per feed
+// parse in well under a second; the 2 MB cap also bounds a feed of very long
+// articles. An article cut off by the size limit is dropped.
+var MAX_FEED_CHARS = 2000000;
+var MAX_ITEMS_PER_FEED = 100;
+
 // Turns one feed document (RSS <item> or Atom <entry>) into articles:
 // {title, source, date, timestamp, link}. noTitle is the (translated) text
 // for an item without a title. Returns [] for empty or unreadable text.
-function parseFeed(xmlText, sourceUrl, noTitle) {
+// limits is optional ({maxChars, maxItems}, for tests); it defaults to the
+// two limits above.
+function parseFeed(xmlText, sourceUrl, noTitle, limits) {
     var articles = [];
     if (!xmlText)
         return articles;
+    var maxChars = limits && limits.maxChars > 0 ? limits.maxChars : MAX_FEED_CHARS;
+    var maxItems = limits && limits.maxItems > 0 ? limits.maxItems : MAX_ITEMS_PER_FEED;
+    if (xmlText.length > maxChars)
+        xmlText = xmlText.slice(0, maxChars);
     // The source name is the feed's own <title>: the first one before the
     // first item, not counting the <title> of a channel <image>.
     var firstItem = xmlText.search(/<(item|entry)\b/);
@@ -248,7 +263,7 @@ function parseFeed(xmlText, sourceUrl, noTitle) {
     var itemRegex = /<(item|entry)\b[^>]*>([\s\S]*?)<\/\1>/g;
     var match;
 
-    while ((match = itemRegex.exec(xmlText)) !== null) {
+    while (articles.length < maxItems && (match = itemRegex.exec(xmlText)) !== null) {
         var content = match[2];
         var titleM = content.match(/<title\b[^>]*>([\s\S]*?)<\/title>/);
 
