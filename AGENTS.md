@@ -115,7 +115,7 @@ docs/                         decisions, roadmap, architecture, glossary, threat
 3. **Personal data and examples.** Which services a person uses is personal data: never name who uses what. Examples, tests and docs use invented names or public project feeds only.
 4. **Made by.** Every pull request says who made it, and every decision row says who decided it (the owner, or the AI by tool and model). An issue written by an AI starts with `Made by: <tool> (<model>)`. **Supporting AIs** (outside AI reviewers) open issues only, never pull requests; their issues carry the label `outside-review`. The lead AI verifies each finding and fixes a valid one in its own pull request.
 5. **Keep the pull request template whole** (`.github/PULL_REQUEST_TEMPLATE.md`), including the full "Human gates" list with what applies ticked, or "No human gate applies".
-6. **Labels:** the areas (`area:widget`, `area:settings`, `area:translations`, `area:ci`, `area:docs`), one kind (`step`, `fix`, `ui-round`, `retro`), `user-sprint` for User Sprint items, `human-gate` when a gate is ticked, and `outside-review` for supporters' issues. The issue forms add `bug` or `enhancement`. Use only these.
+6. **Labels:** the areas (`area:widget`, `area:settings`, `area:translations`, `area:ci`, `area:docs`), one kind (`step`, `fix`, `ui-round`, `retro`), `user-sprint` for User Sprint items, `human-gate` when a gate is ticked, `outside-review` for supporters' issues, and `help wanted` for issues that invite outside contributors (such as the translation requests, #9). The issue forms add `bug` or `enhancement`. Use only these.
 7. **Checks are required.** Before the first push run:
 
    ```
