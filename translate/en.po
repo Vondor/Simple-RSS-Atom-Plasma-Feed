@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:37+0000\n"
+"POT-Creation-Date: 2026-11-18 10:53+0000\n"
 "PO-Revision-Date: 2026-07-23 13:29+0000\n"
 "Last-Translator: Fabian Drywa <dev@serpentsoftware.de>\n"
 "Language-Team: English\n"
@@ -22,12 +22,12 @@ msgid "General"
 msgstr "General"
 
 #: contents/ui/configGeneral.qml
-msgid "Plasmoid Title:"
-msgstr "Plasmoid Title:"
+msgid "Widget Title:"
+msgstr "Widget Title:"
 
 #: contents/ui/configGeneral.qml
-msgid "Leave empty to auto-collapse space..."
-msgstr "Leave empty to auto-collapse space..."
+msgid "Leave empty to show no title"
+msgstr "Leave empty to show no title"
 
 #: contents/ui/configGeneral.qml
 msgid "Refresh Interval:"
@@ -46,36 +46,48 @@ msgid "No feeds configured yet."
 msgstr "No feeds configured yet."
 
 #: contents/ui/configGeneral.qml
-msgid "Add feed URL..."
-msgstr "Add feed URL..."
+msgid "Paste a feed address…"
+msgstr "Paste a feed address…"
 
 #: contents/ui/configGeneral.qml
 msgid "Add"
 msgstr "Add"
 
 #: contents/ui/configGeneral.qml
-msgid "Blacklist (Regex):"
-msgstr "Blacklist (Regex):"
+msgid "This feed is already in the list."
+msgstr "This feed is already in the list."
+
+#: contents/ui/configGeneral.qml
+msgid "This is not a web address. A feed address looks like https://example.org/feed."
+msgstr "This is not a web address. A feed address looks like https://example.org/feed."
+
+#: contents/ui/configGeneral.qml
+msgid "Hide Articles Matching:"
+msgstr "Hide Articles Matching:"
 
 #: contents/ui/configGeneral.qml
 msgid "Remove Pattern"
 msgstr "Remove Pattern"
 
 #: contents/ui/configGeneral.qml
-msgid "No exclusion patterns configured."
-msgstr "No exclusion patterns configured."
+msgid "No articles are hidden."
+msgstr "No articles are hidden."
 
 #: contents/ui/configGeneral.qml
-msgid "Add block expression..."
-msgstr "Add block expression..."
+msgid "Add a word…"
+msgstr "Add a word…"
+
+#: contents/ui/configGeneral.qml
+msgid "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
+msgstr "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
 
 #: contents/ui/main.qml
 msgid "Never"
 msgstr "Never"
 
 #: contents/ui/main.qml
-msgid "Regex Filter Articles..."
-msgstr "Regex Filter Articles..."
+msgid "Search articles…"
+msgstr "Search articles…"
 
 #: contents/ui/main.qml
 msgid "Last Updated: %1"
@@ -100,8 +112,8 @@ msgstr[0] "%1 of %2 feeds could not be loaded."
 msgstr[1] "%1 of %2 feeds could not be loaded."
 
 #: contents/ui/main.qml
-msgid "No articles match your filter."
-msgstr "No articles match your filter."
+msgid "No articles match your search."
+msgstr "No articles match your search."
 
 #: contents/ui/main.qml
 msgid "No articles to show. Check your feed sources or your connection."
@@ -150,6 +162,30 @@ msgstr "RSS Feed Plasmoid"
 msgctxt "@info widget description"
 msgid "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
 msgstr "A lightweight RSS Feed reader made via Gemini AI, adjusted with Claude AI and Designed by a Human with Human Translations."
+
+#~ msgid "Plasmoid Title:"
+#~ msgstr "Plasmoid Title:"
+
+#~ msgid "Leave empty to auto-collapse space..."
+#~ msgstr "Leave empty to auto-collapse space..."
+
+#~ msgid "Add feed URL..."
+#~ msgstr "Add feed URL..."
+
+#~ msgid "Blacklist (Regex):"
+#~ msgstr "Blacklist (Regex):"
+
+#~ msgid "No exclusion patterns configured."
+#~ msgstr "No exclusion patterns configured."
+
+#~ msgid "Add block expression..."
+#~ msgstr "Add block expression..."
+
+#~ msgid "Regex Filter Articles..."
+#~ msgstr "Regex Filter Articles..."
+
+#~ msgid "No articles match your filter."
+#~ msgstr "No articles match your filter."
 
 #~ msgctxt "@info widget description"
 #~ msgid "A lightweight RSS Feed reader made via Gemini AI and adjusted with Claude AI."

@@ -13,9 +13,10 @@ desktop or panel.
 - Reads both **RSS** (`<item>`) and **Atom** (`<entry>`) feeds.
 - Combines all configured sources into a single list sorted by date, with
   duplicate articles (same link, or same source and title) removed.
-- **Live filter**: type a regular expression into the search field to narrow
-  the list by title or source.
-- **Blacklist**: regular expressions that permanently hide matching articles.
+- **Search**: type any text into the search field to narrow the list to the
+  articles whose title or source contains it.
+- **Hide articles**: words (or regular expressions) that permanently hide
+  matching articles.
 - Configurable refresh interval (1 to 1440 minutes) and an optional custom
   title.
 - Click an article to open it in your default browser.
@@ -78,13 +79,13 @@ Right-click the widget and choose **Configure RSS Feed Plasmoid…**
 
 | Setting | Description |
 | --- | --- |
-| **Plasmoid Title** | Optional heading. Leave it empty to hide the title and save space. |
+| **Widget Title** | Optional heading. Leave it empty to hide the title and save space. |
 | **Refresh Interval** | How often all feeds are reloaded, in minutes (default: 15). |
-| **RSS Feed Sources** | The feed URLs to read. RSS and Atom URLs can be mixed freely. The default source is the KDE announcements feed. |
-| **Blacklist (Regex)** | Case-insensitive regular expressions. Articles whose title or source matches any of them are hidden. |
+| **RSS Feed Sources** | The feed addresses to read. RSS and Atom feeds can be mixed freely. Paste an address and press **Add**; `https://` is added when it is missing, and an address you pasted but did not add is still saved when you press **OK** or **Apply**. The default source is the KDE announcements feed. |
+| **Hide Articles Matching** | Words that hide every article whose title or source contains one of them, not case-sensitive. Regular expressions work too, for example `sponsored|advert`; text that is not a valid expression, such as `C++`, is matched as written. |
 
-The search field at the top of the widget takes a case-insensitive regular
-expression too, for example `plasma|frameworks`.
+The search field at the top of the widget finds plain text, not case-sensitive,
+in titles and sources: `C++` finds exactly `C++`.
 
 ## Development
 

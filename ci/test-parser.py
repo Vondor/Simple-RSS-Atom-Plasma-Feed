@@ -344,9 +344,28 @@ case("merge: no link, same source and title shown once", "mergeArticles",
 case("merge: no blacklist value", "mergeArticles", [A, None], lambda r: len(r) == 4)
 # Search box
 case("search: empty shows all", "filterArticles", [A, "  "], lambda r: len(r) == 4)
-case("search: regex on title, case-insensitive", "filterArticles", [A, "^new"], lambda r: [a["title"] for a in r] == ["New SPONSORED post", "Newest"])
+case("search: plain text on title, case-insensitive", "filterArticles", [A, "NEW"], lambda r: [a["title"] for a in r] == ["Old news", "New SPONSORED post", "Newest"])
 case("search: matches the source too", "filterArticles", [A, "feed b"], lambda r: [a["title"] for a in r] == ["Newest"])
-case("search: invalid regex shows none", "filterArticles", [A, "[oops"], [])
+case("search: C++ is plain text, not a regex", "filterArticles",
+     [[art("Learning C++ today", "S", 1), art("Learning C today", "S", 2)], "c++"], lambda r: [a["title"] for a in r] == ["Learning C++ today"])
+case("search: regex characters match literally", "filterArticles", [A, "^new"], [])
+case("search: unfinished bracket shows none instead of failing", "filterArticles", [A, "[oops"], [])
+# Settings page input (D-020)
+case("feed url: kept as typed", "normalizeFeedUrl", ["  https://example.org/feed.xml "], "https://example.org/feed.xml")
+case("feed url: http is fine", "normalizeFeedUrl", ["http://example.org:8080/rss?x=1"], "http://example.org:8080/rss?x=1")
+case("feed url: https added without a scheme", "normalizeFeedUrl", ["example.org/feed"], "https://example.org/feed")
+case("feed url: half-typed name without a dot refused", "normalizeFeedUrl", ["kde"], "")
+case("feed url: host without a dot is fine with a scheme", "normalizeFeedUrl", ["http://localhost/feed"], "http://localhost/feed")
+case("feed url: other schemes refused", "normalizeFeedUrl", ["ftp://example.org/feed"], "")
+case("feed url: javascript refused", "normalizeFeedUrl", ["javascript:alert(1)"], "")
+case("feed url: spaces refused", "normalizeFeedUrl", ["not a feed"], "")
+case("feed url: empty", "normalizeFeedUrl", ["   "], "")
+case("pattern: valid one kept", "blacklistPattern", [" sponsor(ed)? "], "sponsor(ed)?")
+case("pattern: invalid one matches literally", "blacklistPattern", ["C++"], "C\\+\\+")
+case("pattern: literal pattern hides only that text", "mergeArticles",
+     [[art("C++ news", "S", 1, "https://example.org/1"), art("C news", "S", 2, "https://example.org/2")], ["C\\+\\+"]],
+     lambda r: [a["title"] for a in r] == ["C news"])
+case("pattern: validity", "isValidPattern", ["(unclosed"], False)
 # Formatting
 case("format: date and time", "formatDateTime", [date(1794909600000)], "17.11.26 10:00")
 case("format: time", "formatTime", [date(1794915000000)], "11:30")

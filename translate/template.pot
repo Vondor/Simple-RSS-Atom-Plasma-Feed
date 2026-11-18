@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rssreader\n"
 "Report-Msgid-Bugs-To: dev@serpentsoftware.de\n"
-"POT-Creation-Date: 2026-11-18 10:37+0000\n"
+"POT-Creation-Date: 2026-11-18 10:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,11 +23,11 @@ msgid "General"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "Plasmoid Title:"
+msgid "Widget Title:"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "Leave empty to auto-collapse space..."
+msgid "Leave empty to show no title"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
@@ -47,7 +47,7 @@ msgid "No feeds configured yet."
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "Add feed URL..."
+msgid "Paste a feed address…"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
@@ -55,7 +55,15 @@ msgid "Add"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "Blacklist (Regex):"
+msgid "This feed is already in the list."
+msgstr ""
+
+#: contents/ui/configGeneral.qml
+msgid "This is not a web address. A feed address looks like https://example.org/feed."
+msgstr ""
+
+#: contents/ui/configGeneral.qml
+msgid "Hide Articles Matching:"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
@@ -63,11 +71,15 @@ msgid "Remove Pattern"
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "No exclusion patterns configured."
+msgid "No articles are hidden."
 msgstr ""
 
 #: contents/ui/configGeneral.qml
-msgid "Add block expression..."
+msgid "Add a word…"
+msgstr ""
+
+#: contents/ui/configGeneral.qml
+msgid "Articles whose title or source contains one of these words are hidden. Upper and lower case do not matter. Regular expressions work too."
 msgstr ""
 
 #: contents/ui/main.qml
@@ -75,7 +87,7 @@ msgid "Never"
 msgstr ""
 
 #: contents/ui/main.qml
-msgid "Regex Filter Articles..."
+msgid "Search articles…"
 msgstr ""
 
 #: contents/ui/main.qml
@@ -101,7 +113,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: contents/ui/main.qml
-msgid "No articles match your filter."
+msgid "No articles match your search."
 msgstr ""
 
 #: contents/ui/main.qml
