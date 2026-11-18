@@ -180,13 +180,55 @@ case("title: named and numeric entities", "parseFeed",
 case("title: markup is stripped to text", "parseFeed", [one("<title><b>Bold</b> <script>x</script>news</title>"), "u", "NT"],
      field("title", "Bold xnews"))
 case("title: missing uses the given text", "parseFeed", [one("<link>https://example.org/x</link>"), "u", "No Title"], field("title", "No Title"))
-case("title: emoji as numeric entity", "parseFeed", [one("<title>Hi &#128512;</title>"), "u", "NT"], field("title", "Hi \U0001F600"), known="#30")
+case("title: emoji as numeric entity", "parseFeed", [one("<title>Hi &#128512;</title>"), "u", "NT"], field("title", "Hi \U0001F600"))
 case("source: feed title with entity", "parseFeed", [one("<title>x</title>", "Tom &amp; Jerry"), "u", "NT"], field("source", "Tom & Jerry"))
 case("source: no title falls back to the URL", "parseFeed", ["<rss><item><link>https://example.org/1</link></item></rss>", "https://example.org/rss", "NT"],
      field("source", "https://example.org/rss"))
 case("link: entity in Atom href is decoded", "parseFeed",
      [one('<title>x</title><link rel="alternate" href="https://example.org/?a=1&amp;b=2"/>'), "u", "NT"],
-     field("link", "https://example.org/?a=1&b=2"), known="#30")
+     field("link", "https://example.org/?a=1&b=2"))
+case("title: emoji as hex entity", "parseFeed", [one("<title>Party &#x1F600;</title>"), "u", "NT"], field("title", "Party \U0001F600"))
+case("title: invalid numeric entity stays as written", "parseFeed", [one("<title>a &#0; b &#x110000; c &#xD800;</title>"), "u", "NT"],
+     field("title", "a &#0; b &#x110000; c &#xD800;"))
+case("title: unknown named entity stays as written", "parseFeed", [one("<title>x &bogus; y</title>"), "u", "NT"], field("title", "x &bogus; y"))
+case("title: entities are decoded only once", "parseFeed", [one("<title>use &amp;#60;b&amp;#62; &amp;amp;</title>"), "u", "NT"],
+     field("title", "use &#60;b&#62; &amp;"))
+case("title: < and > inside CDATA are text", "parseFeed", [one("<title><![CDATA[Why 3 < 5 and 7 > 2 matters]]></title>"), "u", "NT"],
+     field("title", "Why 3 < 5 and 7 > 2 matters"))
+case("title: markup inside CDATA is stripped", "parseFeed", [one("<title><![CDATA[<b>Bold</b> news]]></title>"), "u", "NT"],
+     field("title", "Bold news"))
+case("title: text around CDATA is kept", "parseFeed", [one("<title>Re: <![CDATA[a < b]]> &amp; more</title>"), "u", "NT"],
+     field("title", "Re: a < b & more"))
+case("title: escaped markup is shown as text", "parseFeed", [one("<title>The &lt;b&gt; tag</title>"), "u", "NT"], field("title", "The <b> tag"))
+case("title: line breaks and indentation collapse", "parseFeed", [one("<title>\n    Two\n    lines\t here\n</title>"), "u", "NT"],
+     field("title", "Two lines here"))
+case("source: image title before the channel title is skipped", "parseFeed",
+     ["<rss><channel><image><title>Logo</title><url>https://example.org/l.png</url></image><title>Real Name</title>"
+      "<item><title>x</title></item></channel></rss>", "u", "NT"], field("source", "Real Name"))
+case("source: an item title is never the source", "parseFeed",
+     ["<rss><channel><item><title>Item</title></item></channel></rss>", "https://example.org/rss", "NT"],
+     field("source", "https://example.org/rss"))
+case("rss1: <items> list is not an item", "parseFeed",
+     ['<rdf:RDF><channel><title>R</title><items><rdf:Seq><rdf:li resource="https://example.org/r/1"/></rdf:Seq></items></channel>'
+      '<item><title>One</title><link>https://example.org/r/1</link></item><item><title>Two</title><link>https://example.org/r/2</link></item></rdf:RDF>', "u", "NT"],
+     lambda r: [a["title"] for a in r] == ["One", "Two"])
+case("link: entities in Atom href, rel after href", "parseFeed",
+     [one('<title>x</title><link href="https://wiki.example/index.php?title=X&amp;diff=2&amp;oldid=1" rel="alternate"/>'), "u", "NT"],
+     field("link", "https://wiki.example/index.php?title=X&diff=2&oldid=1"))
+case("link: entities in Atom href without rel", "parseFeed", [one("<title>x</title><link href='https://example.org/?a=1&amp;b=2'/>"), "u", "NT"],
+     field("link", "https://example.org/?a=1&b=2"))
+case("link: entity in RSS link is decoded", "parseFeed", [one("<title>x</title><link>https://example.org/?a=1&amp;b=2</link>"), "u", "NT"],
+     field("link", "https://example.org/?a=1&b=2"))
+case("link: permalink guid when there is no link", "parseFeed",
+     [one('<title>x</title><guid isPermaLink="true">https://example.org/g/1</guid>'), "u", "NT"], field("link", "https://example.org/g/1"))
+case("link: guid without isPermaLink counts as permalink", "parseFeed",
+     [one("<title>x</title><guid>https://example.org/g/2</guid>"), "u", "NT"], field("link", "https://example.org/g/2"))
+case("link: guid with isPermaLink=false is not a link", "parseFeed",
+     [one('<title>x</title><guid isPermaLink="false">https://example.org/g/3</guid>'), "u", "NT"], field("link", ""))
+case("link: guid that is no web address is not a link", "parseFeed",
+     [one("<title>x</title><guid>tag:example.org,2026:1</guid>"), "u", "NT"], field("link", ""))
+case("link: <link> wins over guid", "parseFeed",
+     [one("<title>x</title><link>https://example.org/l</link><guid>https://example.org/g</guid>"), "u", "NT"], field("link", "https://example.org/l"))
 # Dates
 case("date: unreadable text is shown as is", "parseFeed", [one("<title>x</title><pubDate>sometime</pubDate>"), "u", "NT"],
      lambda r: r[0]["timestamp"] == 0 and r[0]["date"] == "sometime")
