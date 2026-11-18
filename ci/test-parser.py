@@ -26,8 +26,11 @@ import sys
 import time
 from pathlib import Path
 
-# Dates are formatted in local time; fix the zone before Qt reads it.
+# Dates are formatted in local time and in the user's format; fix the zone
+# and the locale (German, the format the widget used before #31) before Qt
+# reads them. Qt brings its own locale data, so no system locale is needed.
 os.environ["TZ"] = "UTC"
+os.environ["LC_ALL"] = "de_DE.UTF-8"
 time.tzset()
 
 try:
@@ -171,7 +174,8 @@ case("atom: no date sorts as 0", "parseFeed", [ATOM, "u", "No Title"], lambda r:
 # RSS 1.0
 case("rss1: item with attributes is read", "parseFeed", [RSS1, "u", "No Title"],
      lambda r: len(r) == 1 and r[0]["title"] == "RDF item" and r[0]["link"] == "https://example.org/r/1")
-case("rss1: dc:date is read", "parseFeed", [RSS1, "u", "No Title"], field("timestamp", 1794906000000), known="#31")
+case("rss1: dc:date is read", "parseFeed", [RSS1, "u", "No Title"], field("timestamp", 1794906000000))
+case("rss1: dc:date is formatted", "parseFeed", [RSS1, "u", "No Title"], field("date", "17.11.26 09:00"))
 # Text content
 case("title: CDATA", "parseFeed", [one("<title><![CDATA[Fish & Chips]]></title>"), "u", "NT"], field("title", "Fish & Chips"))
 case("title: named and numeric entities", "parseFeed",
@@ -233,7 +237,42 @@ case("link: <link> wins over guid", "parseFeed",
 case("date: unreadable text is shown as is", "parseFeed", [one("<title>x</title><pubDate>sometime</pubDate>"), "u", "NT"],
      lambda r: r[0]["timestamp"] == 0 and r[0]["date"] == "sometime")
 case("date: US zone name PDT", "parseFeed", [one("<title>x</title><pubDate>Tue, 17 Nov 2026 02:00:00 PDT</pubDate>"), "u", "NT"],
-     field("timestamp", 1794909600000), known="#31")
+     field("timestamp", 1794906000000))
+case("date: PDT is shown in local time", "parseFeed", [one("<title>x</title><pubDate>Tue, 17 Nov 2026 02:00:00 PDT</pubDate>"), "u", "NT"],
+     field("date", "17.11.26 09:00"))
+
+
+def stamp(text, ts, name=None):
+    case(name or "date: %s" % text, "parseFeed", [one("<title>x</title><pubDate>%s</pubDate>" % text), "u", "NT"], field("timestamp", ts))
+
+
+# 17 Nov 2026 10:00 UTC is 1794909600000.
+stamp("Tue, 17 Nov 2026 10:00:00 UT", 1794909600000)
+stamp("Tue, 17 Nov 2026 10:00:00 GMT", 1794909600000)
+stamp("Tue, 17 Nov 2026 05:00:00 EST", 1794909600000)
+stamp("Tue, 17 Nov 2026 11:00:00 CET", 1794909600000)
+stamp("Tue, 17 Nov 2026 03:00:00 -0700 (PDT)", 1794909600000)
+stamp("Tue, 17 Nov 2026 12:00:00 +02:00", 1794909600000)
+stamp("Tue, 17 Nov 2026 10:00 GMT", 1794909600000)
+stamp("Tue, 17 Nov 2026 10:00", 1794909600000, "date: no zone counts as UTC")
+stamp("17 Nov 2026 10:00:00 +0000", 1794909600000, "date: no weekday")
+stamp("Tue,  17  Nov  2026  10:00:00  GMT ", 1794909600000, "date: extra spaces")
+stamp("Tue, 17 nov 26 10:00:00 gmt", 1794909600000, "date: two-digit year, lower case")
+stamp("Tuesday, 17 November 2026 10:00:00 GMT", 1794909600000, "date: full day and month names")
+stamp("Tue, 17 Nov 2026 10:00:00 XYZ", 1794909600000, "date: unknown zone name counts as UTC")
+stamp("Tue, 3 Nov 2026 10:00:00 +0000", 1793700000000, "date: one-digit day")
+stamp("2026-11-17T10:00:00Z", 1794909600000, "date: ISO 8601 in pubDate")
+stamp("2026-11-17T12:00:00.500+02:00", 1794909600500, "date: ISO 8601 with fraction and offset")
+case("date: day 32 is not a date", "parseFeed", [one("<title>x</title><pubDate>Tue, 32 Nov 2026 10:00:00 GMT</pubDate>"), "u", "NT"],
+     lambda r: r[0]["timestamp"] == 0 and r[0]["date"] == "Tue, 32 Nov 2026 10:00:00 GMT")
+case("date: unknown month is not a date", "parseFeed", [one("<title>x</title><pubDate>Tue, 17 Foo 2026 10:00:00 GMT</pubDate>"), "u", "NT"],
+     field("timestamp", 0))
+case("date: <pubDateX> is not a date", "parseFeed", [one("<title>x</title><pubDateX>Tue, 17 Nov 2026 10:00:00 GMT</pubDateX>"), "u", "NT"],
+     field("timestamp", 0))
+case("date: Atom <published> wins over an earlier <updated>", "parseFeed",
+     ['<feed xmlns="http://www.w3.org/2005/Atom"><title>A</title><entry><title>x</title>'
+      '<updated>2026-11-18T10:00:00Z</updated><published>2026-11-17T10:00:00Z</published></entry></feed>', "u", "NT"],
+     field("timestamp", 1794909600000))
 # Broken input never throws
 case("empty document", "parseFeed", ["", "u", "NT"], [])
 case("null document", "parseFeed", [None, "u", "NT"], [])
@@ -265,6 +304,10 @@ case("search: invalid regex shows none", "filterArticles", [A, "[oops"], [])
 # Formatting
 case("format: date and time", "formatDateTime", [date(1794909600000)], "17.11.26 10:00")
 case("format: time", "formatTime", [date(1794915000000)], "11:30")
+case("format: US date and time", "formatDateTime", [date(1794909600000), "en_US"], "11/17/26 10:00\u202fAM")
+case("format: British date and time", "formatDateTime", [date(1794909600000), "en_GB"], "17/11/2026 10:00")
+case("format: Japanese date and time", "formatDateTime", [date(1794909600000), "ja_JP"], "2026/11/17 10:00")
+case("format: US time", "formatTime", [date(1794915000000), "en_US"], "11:30\u202fAM")
 case("format: invalid date", "formatDateTime", [{"$date": "invalid"}], "")
 case("format: no date", "formatTime", [None], "")
 

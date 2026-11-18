@@ -45,46 +45,118 @@ function parseExcludes(jsonStr) {
     }
 }
 
-// The short time zone name for a date, such as "CET", or "" if unknown.
-// QML's engine has no Intl, so the fallback reads it from Date.toString().
-function timeZoneName(date) {
-    var tz = "";
-    try {
-        var parts = new Intl.DateTimeFormat('en', {
-            timeZoneName: 'short'
-        }).formatToParts(date);
-        for (var i = 0; i < parts.length; i++) {
-            if (parts[i].type === 'timeZoneName') {
-                tz = parts[i].value;
-                break;
-            }
-        }
-    } catch (e) {
-        var match = date.toString().match(/\(([^)]+)\)$/);
-        if (match)
-            tz = match[1];
+// Locale.ShortFormat. The Locale enum is not visible in a .pragma library
+// script, so its value (documented as 1 in the QML Locale type) is used.
+var SHORT_FORMAT = 1;
+
+// The locale to format with: the named one (used by the tests), otherwise
+// the user's own, which Plasma takes from the Region & Language settings.
+function formatLocale(localeName) {
+    return localeName ? Qt.locale(localeName) : Qt.locale();
+}
+
+// The article date shown in the list: date and time in local time, in the
+// user's short date-time format (for example "17.11.26 10:00" in German,
+// "11/17/26 10:00 AM" in US English). QML's engine has no Intl, so the
+// time zone name is not shown.
+function formatDateTime(date, localeName) {
+    if (!date || isNaN(date.getTime()))
+        return "";
+    return date.toLocaleString(formatLocale(localeName), SHORT_FORMAT);
+}
+
+// The time of day in the user's short time format, used for "Last Updated".
+function formatTime(date, localeName) {
+    if (!date || isNaN(date.getTime()))
+        return "";
+    return date.toLocaleTimeString(formatLocale(localeName), SHORT_FORMAT);
+}
+
+var MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+// Offsets in minutes of the zone names RFC 822 defines, plus a few that
+// feeds use anyway. A name not listed here counts as UTC.
+var ZONE_OFFSETS = {
+    "ut": 0,
+    "utc": 0,
+    "gmt": 0,
+    "z": 0,
+    "est": -300,
+    "edt": -240,
+    "cst": -360,
+    "cdt": -300,
+    "mst": -420,
+    "mdt": -360,
+    "pst": -480,
+    "pdt": -420,
+    "akst": -540,
+    "akdt": -480,
+    "hst": -600,
+    "bst": 60,
+    "ist": 60,
+    "wet": 0,
+    "west": 60,
+    "cet": 60,
+    "cest": 120,
+    "met": 60,
+    "mest": 120,
+    "eet": 120,
+    "eest": 180,
+    "msk": 180,
+    "jst": 540,
+    "kst": 540,
+    "aest": 600,
+    "aedt": 660
+};
+
+// Reads an RFC 822 / RFC 2822 date as RSS uses it, such as
+// "Tue, 3 Jun 2025 09:00:00 GMT": the weekday is optional, seconds are
+// optional, the zone is a name ("PDT", "UT"), an offset ("+0200", "-07:00")
+// or missing (then UTC), and a trailing comment like "(PDT)" is ignored.
+// Returns milliseconds since the epoch, or NaN when the text is not such a date.
+function parseRfc822Date(text) {
+    var m = /^\s*(?:[A-Za-z]+\.?,?\s*)?(\d{1,2})[\s-]+([A-Za-z]{3,})\.?[\s-]+(\d{2,4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([A-Za-z]{1,5}|[+-]\d{2}:?\d{2})?\s*(?:\([^)]*\))?\s*$/.exec(text);
+    if (!m)
+        return NaN;
+    var month = MONTHS.indexOf(m[2].slice(0, 3).toLowerCase());
+    var day = parseInt(m[1], 10);
+    var year = parseInt(m[3], 10);
+    var hour = parseInt(m[4], 10);
+    var minute = parseInt(m[5], 10);
+    var second = m[6] ? parseInt(m[6], 10) : 0;
+    if (month < 0 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 60)
+        return NaN;
+    if (m[3].length === 2)
+        year += year < 50 ? 2000 : 1900;
+    else if (m[3].length === 3)
+        year += 1900;
+    var offset = 0;
+    var zone = m[7] || "";
+    if (/^[+-]/.test(zone)) {
+        var digits = zone.replace(":", "");
+        offset = (parseInt(digits.slice(1, 3), 10) * 60 + parseInt(digits.slice(3, 5), 10)) * (zone.charAt(0) === "-" ? -1 : 1);
+    } else if (zone !== "") {
+        offset = ZONE_OFFSETS[zone.toLowerCase()] || 0;
     }
-    return tz;
+    // A leap second (60) is read as 59, as Date cannot hold it.
+    return Date.UTC(year, month, day, hour, minute, Math.min(second, 59)) - offset * 60000;
 }
 
-function pad2(n) {
-    return ("0" + n).slice(-2);
-}
-
-// "DD.MM.YY HH:MM TZ" in local time, the article date shown in the list.
-function formatDateTime(date) {
-    if (!date || isNaN(date.getTime()))
-        return "";
-    var tz = timeZoneName(date);
-    return pad2(date.getDate()) + "." + pad2(date.getMonth() + 1) + "." + pad2(date.getFullYear()) + " " + pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + (tz ? " " + tz : "");
-}
-
-// "HH:MM TZ" in local time, used for "Last Updated".
-function formatTime(date) {
-    if (!date || isNaN(date.getTime()))
-        return "";
-    var tz = timeZoneName(date);
-    return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + (tz ? " " + tz : "");
+// Reads a feed date: RFC 822 as in RSS, otherwise whatever the engine's own
+// Date understands (ISO 8601 as in Atom and dc:date). Returns milliseconds
+// since the epoch, or NaN when the text is not a date.
+function parseDate(text) {
+    if (!text)
+        return NaN;
+    var ms = parseRfc822Date(text);
+    if (isNaN(ms)) {
+        try {
+            ms = new Date(text).getTime();
+        } catch (e) {
+            ms = NaN;
+        }
+    }
+    return ms;
 }
 
 // Named entities that feeds commonly use. XML itself only defines the first
@@ -211,19 +283,22 @@ function parseFeed(xmlText, sourceUrl, noTitle) {
             }
         }
 
-        var dM = content.match(/<(pubDate|updated|published)[^>]*>([\s\S]*?)<\/\1>/);
-        var pubDate = dM ? stripTags(dM[2]) : "";
-        var ts = 0;
+        // The first date found, in this order: when the article was
+        // published (Atom <published>, RSS 2.0 <pubDate>, RSS 1.0 <dc:date>),
+        // and only then when it was last changed (Atom <updated>).
+        var pubDate = "";
+        var dateTags = ["published", "pubDate", "dc:date", "updated"];
+        for (var t = 0; t < dateTags.length && pubDate === ""; t++) {
+            var dM = content.match(new RegExp("<" + dateTags[t] + "\\b[^>]*>([\\s\\S]*?)</" + dateTags[t] + ">"));
+            if (dM)
+                pubDate = stripTags(dM[1]);
+        }
+        var ts = parseDate(pubDate);
         var fmtDate = pubDate;
-        try {
-            if (pubDate) {
-                var d = new Date(pubDate);
-                if (!isNaN(d.getTime())) {
-                    ts = d.getTime();
-                    fmtDate = formatDateTime(d);
-                }
-            }
-        } catch (e) {}
+        if (isNaN(ts))
+            ts = 0;
+        else
+            fmtDate = formatDateTime(new Date(ts));
 
         articles.push({
             "title": titleM ? stripTags(titleM[1]) : noTitle,
